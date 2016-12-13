@@ -8,33 +8,36 @@ import optparse
 import subprocess
 
 def ram():
-    c1 = ['free', '-m']
-    p1 = subprocess.Popen(c1, stdout=subprocess.PIPE)
-    c2 = ['grep', 'Mem']
-    p2 = subprocess.Popen(c2, stdin=p1.stdout, stdout=subprocess.PIPE)
-    c3 = ['awk', '{print $4/$2*100}']
-    p3 = subprocess.Popen(c3, stdin=p2.stdout, stdout=subprocess.PIPE)
-    result = p3.stdout.read()
+    """Getting current RAM usage using subprocess library"""
+    command_1 = ['free', '-m']
+    process_1 = subprocess.Popen(command_1, stdout=subprocess.PIPE)
+    command_2 = ['grep', 'Mem']
+    process_2 = subprocess.Popen(command_2, stdin=process_1.stdout, stdout=subprocess.PIPE)
+    command_3 = ['awk', '{print $4/$2*100}']
+    process_3 = subprocess.Popen(command_3, stdin=process_2.stdout, stdout=subprocess.PIPE)
+    result = process_3.stdout.read()
     return result
 
 def cpu():
-    c1 = ['top', '-b', '-n1']
-    p1 = subprocess.Popen(c1, stdout=subprocess.PIPE)
-    c2 = ['grep', 'Cpu(s)']
-    p2 = subprocess.Popen(c2, stdin=p1.stdout, stdout=subprocess.PIPE)
-    c3 = ['awk', '{print $2+$4}']
-    p3 = subprocess.Popen(c3, stdin=p2.stdout, stdout=subprocess.PIPE)
-    result = p3.stdout.read()
+    """Getting current CPU usage using subprocess library"""
+    command_1 = ['top', '-b', '-n1']
+    process_1 = subprocess.Popen(command_1, stdout=subprocess.PIPE)
+    command_2 = ['grep', 'Cpu(s)']
+    process_2 = subprocess.Popen(command_2, stdin=process_1.stdout, stdout=subprocess.PIPE)
+    command_3 = ['awk', '{print $2+$4}']
+    process_3 = subprocess.Popen(command_3, stdin=process_2.stdout, stdout=subprocess.PIPE)
+    result = process_3.stdout.read()
     return result
 
 def cur_processes():
-    c1 = ['ps', '-c']
-    p1 = subprocess.Popen(c1, stdout=subprocess.PIPE)
-    c2 = ['grep', '-v', 'PID']
-    p2 = subprocess.Popen(c2, stdin=p1.stdout, stdout=subprocess.PIPE)
-    c3 = ['wc', '-l']
-    p3 = subprocess.Popen(c3, stdin=p2.stdout, stdout=subprocess.PIPE)
-    result = p3.stdout.read()
+    """Getting number of current process running"""
+    command_1 = ['ps', '-c']
+    process_1 = subprocess.Popen(command_1, stdout=subprocess.PIPE)
+    command_2 = ['grep', '-v', 'PID']
+    process_2 = subprocess.Popen(command_2, stdin=process_1.stdout, stdout=subprocess.PIPE)
+    command_3 = ['wc', '-l']
+    process_3 = subprocess.Popen(command_3, stdin=process_2.stdout, stdout=subprocess.PIPE)
+    result = process_3.stdout.read()
     return result
 
 def main():
