@@ -1,9 +1,8 @@
 """ Script for gathering host information """
 
 
-from datetime import datetime
+import time as t
 import sys
-import os
 import optparse
 import subprocess
 
@@ -52,9 +51,6 @@ def main():
     parser.add_option('-p', '--processes', dest='proc',
                       help='Print current number of processes running',
                       default=False, action='store_true')
-    parser.add_option('-a', '--append', dest='app',
-                      help='Append current info to existing file',
-                      default=False, action='store_true')
     parser.add_option('-s', '--file', dest='filename', help='Path to file', default=False)
 
     options, _ = parser.parse_args()
@@ -62,9 +58,7 @@ def main():
     cur_ram = ram()
     cur_cpu = cpu()
     processes = cur_processes()
-    time = datetime.now()
-
-    print cur_cpu
+    time = t.strftime("%Y-%m-%d %H:%M:%S")
 
     count = 0
     stdout = str(time)
@@ -78,22 +72,23 @@ def main():
     if options.proc:
         count += 1
         stdout += '\tProcesses running: ' + str(processes)
-    if count > 0:
+    if count:
         print stdout +'\n'
     else:
         print '{0}\tCPU usage:{1}\tCurrent number of processes running'\
               ':{2}\tRAM usage :{3}\n'.format(time, cur_cpu, processes, cur_ram)
 
     filename = options.filename
-    app = options.app
+    if not filename:
+        print 'Path to file required'
+        return 1
 
-    if filename and os.path.isfile(filename) or app:
-        with open(filename, 'a') as res:
-            if count > 0:
-                res.write(stdout + '\n')
-            else:
-                res.write('{0}\tCPU usage:{1}\tCurrent number of processes running'\
-                          ':{2}\t RAM usage :{3}\n'.format(time, cur_cpu, processes, cur_ram))
+    with open(filename, 'a') as res:
+        if count:
+            res.write(stdout + '\n')
+        else:
+            res.write('{0}\tCPU usage:{1}\tCurrent number of processes running'\
+                      ':{2}\t RAM usage :{3}\n'.format(time, cur_cpu, processes, cur_ram))
 
 
 if __name__ == '__main__':
