@@ -9,36 +9,21 @@ import subprocess
 
 def get_current_ram():
     """Getting current RAM usage using subprocess library"""
-    command_1 = ['free', '-m']
-    process_1 = subprocess.Popen(command_1, stdout=subprocess.PIPE)
-    command_2 = ['grep', 'Mem']
-    process_2 = subprocess.Popen(command_2, stdin=process_1.stdout, stdout=subprocess.PIPE)
-    command_3 = ['awk', '{print $4/$2*100}']
-    process_3 = subprocess.Popen(command_3, stdin=process_2.stdout, stdout=subprocess.PIPE)
-    result = process_3.stdout.read()
-    return result
+    result = subprocess.Popen("free -m | grep Mem | awk '{print $4/$2*100}'", shell=True,\
+             stdout=subprocess.PIPE)
+    return  result.stdout.read()
 
 def get_current_cpu():
     """Getting current CPU usage using subprocess library"""
-    command_1 = ['top', '-b', '-n1']
-    process_1 = subprocess.Popen(command_1, stdout=subprocess.PIPE)
-    command_2 = ['grep', 'Cpu(s)']
-    process_2 = subprocess.Popen(command_2, stdin=process_1.stdout, stdout=subprocess.PIPE)
-    command_3 = ['awk', '{print $2+$4}']
-    process_3 = subprocess.Popen(command_3, stdin=process_2.stdout, stdout=subprocess.PIPE)
-    result = process_3.stdout.read()
-    return result
+    result = subprocess.Popen("top -b -n1 | grep 'Cpu(s)' | awk '{print $2+$4}'",shell=True,\
+             stdout=subprocess.PIPE)
+    return result.stdout.read()
+
 
 def get_processes_count():
     """Getting number of current process running"""
-    command_1 = ['ps', '-c']
-    process_1 = subprocess.Popen(command_1, stdout=subprocess.PIPE)
-    command_2 = ['grep', '-v', 'PID']
-    process_2 = subprocess.Popen(command_2, stdin=process_1.stdout, stdout=subprocess.PIPE)
-    command_3 = ['wc', '-l']
-    process_3 = subprocess.Popen(command_3, stdin=process_2.stdout, stdout=subprocess.PIPE)
-    result = process_3.stdout.read()
-    return result
+    result = subprocess.Popen("ps -c | grep -v 'PID'| wc -l",shell=True,stdout=subprocess.PIPE)
+    return result.stdout.read()
 
 def write_into_file(filename, result):
     """Write memory info into file"""
@@ -82,12 +67,13 @@ def main():
                       ':{}\tRAM usage :{}\n'.format(cur_cpu, processes, cur_ram))
 
     res = '\t'.join(result) +'\n'
-    print res
 
     filename = options.filename
-    if filename:
-        write_into_file(result=res, filename=filename)
 
+    if filename:
+        write_into_file(filename, res)
+    if not filename:
+        print res
 
 if __name__ == '__main__':
     sys.exit(main())
