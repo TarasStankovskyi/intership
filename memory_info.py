@@ -24,34 +24,28 @@ def get_optparse():
 
     options, _ = parser.parse_args()
     option_dict = vars(options)
-    filename = options.filename
-    return option_dict, filename
+    return option_dict
 
-def get_arguments_list(options):
-    """Function for parsing optparse options"""
-    del options['filename']
-    args = []
-    option_list = ['cpu', 'ram', 'proc']
-    for option in options:
-        if options[option]:
-            args.append(option)
-    if len(args) == 0:
-        args.extend(option_list)
-    return args
-
-def sys_call(args):
+def sys_call(options):
     """Function for getting system information"""
+    option_list = ['cpu', 'ram', 'proc']
+    result = {}
+    args = []
     commands = {'ram':"free -m | grep Mem | awk '{print $4/$2*100}'",\
                 'cpu':"top -b -n1 | grep 'Cpu(s)' | awk '{print $2+$4}'",\
                 'proc':"ps -c | grep -v 'PID'| wc -l"}
-    result = {}
+
+    del options['filename']
+    [args.append(option) for option in options if options[option]]
+    if len(args) == 0:
+        args.extend(option_list)
     for arg in args:
         if arg in commands:
             result[arg] = subprocess.Popen(commands[arg], shell=True,\
             stdout=subprocess.PIPE).stdout.read()
     return result
 
-def print_result(params, filename=None):
+def get_output(params):
     """Function for result returning"""
     time = t.strftime("%Y-%m-%d %H:%M:%S")
     result = [time]
@@ -66,26 +60,23 @@ def print_result(params, filename=None):
                       ':{}\tRAM usage :{}\n'.format(params['cpu'],\
                       params['proc'], params['ram']))
     res = ' '.join(result) +'\n'
-    if filename:
-        write_into_file(filename, res)
-    if not filename:
-        print res
-    return 1
+    return res
 
-def write_into_file(filename, result):
+def print_result(result, filename=None):
     """Write memory info into file"""
-    if os.path.exists(filename):
+    if filename:
         with open(filename, 'a') as res:
             res.write(result)
-    else:
-        print "There is not file:'{}' in this directory ".format(filename)
+    if not filename:
+        print result
 
 def main():
     """ Function provide information about CPU, RAM usage and processes running  """
-    option_dict, filename = get_optparse()
-    args = get_arguments_list(option_dict)
-    params = sys_call(args)
-    print_result(params, filename)
+    args = get_optparse()                   # getting options from optpaarse
+    filename = args['filename']
+    params = sys_call(args)                 # processing selected options
+    result = get_output(params)             # formation output
+    print_result(result, filename)
 
 
 if __name__ == '__main__':
