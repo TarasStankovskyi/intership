@@ -46,9 +46,9 @@ def get_output(params):
         result.append('  Processes running: {}'.format(params['proc']))
     if len(result) == 1:
         result.append('  CPU usage: {}  Current number of processes running'\
-                      ': {}\tRAM usage: {}\n'.format(params['cpu'],\
+                      ': {}  RAM usage: {}\n'.format(params['cpu'],\
                       params['proc'], params['ram']))
-    return  ' '.join(result) +'\n'
+    return  ''.join(result) +'\n'
 
 def print_result(result, filename=None):
     """Write memory info into file"""
