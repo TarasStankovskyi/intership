@@ -55,11 +55,15 @@ def get_output(params):
 
 def print_result(result, filename=None):
     """Write memory info into file"""
-    if filename:
-        with open(filename, 'a') as res:
-            res.write(result)
-    else:
-        print result
+   if filename:
+       try:
+           with open(filename, 'a') as res:
+               res.write(result)
+       except (FileNotFoundError, IsADirectoryError, PermissionError, OSError) as err:
+           print 'Failed to write into file {}: {}'.format(filename, err)
+           return 2
+   else:
+       print result
 
 
 def main():
