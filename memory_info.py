@@ -50,7 +50,7 @@ def get_output(params):
         result.append('  CPU usage: {}  Current number of processes running'\
                       ': {}  RAM usage: {}\n'.format(params['cpu'],\
                       params['proc'], params['ram']))
-    return  '{}  {}'.format(now, ''.join(result) +'\n')
+    return  '{}  {}\n'.format(now, ''.join(result))
 
 
 def print_result(result, filename=None):
