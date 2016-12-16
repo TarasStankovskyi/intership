@@ -1,11 +1,15 @@
 """ Script for gathering host information """
 
-
-import time as t
-import os
+import time
 import sys
 import optparse
 import subprocess
+
+
+OPTION_LIST = ['cpu', 'ram', 'proc']
+COMMANDS = {'ram':"free -m | grep Mem | awk '{print $4/$2*100}'",
+            'cpu':"top -b -n1 | grep 'Cpu(s)' | awk '{print $2+$4}'",
+            'proc':"ps -c | grep -v 'PID'| wc -l"}
 
 
 def get_optparse():
@@ -25,30 +29,29 @@ def get_optparse():
     options, _ = parser.parse_args()
     return vars(options)
 
+
 def sys_call(option):
     """Function for getting system information"""
-    commands = {'ram':"free -m | grep Mem | awk '{print $4/$2*100}'",\
-                'cpu':"top -b -n1 | grep 'Cpu(s)' | awk '{print $2+$4}'",\
-                'proc':"ps -c | grep -v 'PID'| wc -l"}
+    return subprocess.Popen(COMMANDS[option], shell=True,
+                            stdout=subprocess.PIPE).stdout.read()
 
-    return subprocess.Popen(commands[option], shell=True,\
-           stdout=subprocess.PIPE).stdout.read()
 
 def get_output(params):
     """Function for result returning"""
-    time = t.strftime("%Y-%m-%d %H:%M:%S")
-    result = [time]
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    result = []
     if 'cpu' in params:
         result.append('  CPU usage: {}'.format(params['cpu']))
     if 'ram' in params:
         result.append('  RAM usage: {}'.format(params['ram']))
     if 'proc' in params:
         result.append('  Processes running: {}'.format(params['proc']))
-    if len(result) == 1:
+    if not result:
         result.append('  CPU usage: {}  Current number of processes running'\
                       ': {}  RAM usage: {}\n'.format(params['cpu'],\
                       params['proc'], params['ram']))
-    return  ''.join(result) +'\n'
+    return  '{}  {}'.format(now, ''.join(result) +'\n')
+
 
 def print_result(result, filename=None):
     """Write memory info into file"""
@@ -58,19 +61,18 @@ def print_result(result, filename=None):
     else:
         print result
 
+
 def main():
     """ Function provide information about CPU, RAM usage and processes running  """
     options = get_optparse()                   # getting options from optpaarse
-    option_list = ['cpu', 'ram', 'proc']
-    filename = options['filename']
-    args = [key for key, value in options.items() if value and key in option_list]
-    if len(args) == 0:
-        args.extend(option_list)
+    args = [key for key, value in options.items() if value and key in OPTION_LIST]
+    if not args:
+        args = OPTION_LIST
     params = {}
     for cmd in args:
         params[cmd] = sys_call(cmd)
-    result = get_output(params)             # formation output
-    print_result(result, filename)
+    result = get_output(params)                # formation output
+    print_result(result, options['filename'])
 
 
 if __name__ == '__main__':
