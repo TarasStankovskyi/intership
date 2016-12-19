@@ -2,14 +2,15 @@
 
 import time
 import sys
+import errno
 import optparse
 import subprocess
 
 
-OPTION_LIST = ['cpu', 'ram', 'proc']
-COMMANDS = {'ram':"free -m | grep Mem | awk '{print $4/$2*100}'",
-            'cpu':"top -b -n1 | grep 'Cpu(s)' | awk '{print $2+$4}'",
-            'proc':"ps -c | grep -v 'PID'| wc -l"}
+OPTION_LIST = ['CPU usage', 'RAM usage', 'Processes running']
+COMMANDS = {'RAM usage':"free -m | grep Mem | awk '{print $4/$2*100}'",
+            'CPU usage':"top -b -n1 | grep 'Cpu(s)' | awk '{print $2+$4}'",
+            'Processes running':"ps -c | grep -v 'PID'| wc -l"}
 
 
 def get_optparse():
@@ -17,11 +18,11 @@ def get_optparse():
     usage = "Usage: %prog -s path to file -a append iformation to existing file "
     parser = optparse.OptionParser(usage=usage)
 
-    parser.add_option('-c', '--cpu', dest='cpu',
+    parser.add_option('-c', '--cpu', dest='CPU usage',
                       help='Print current CPU usage', default=False, action='store_true')
-    parser.add_option('-r', '--ram', dest='ram',
+    parser.add_option('-r', '--ram', dest='RAM usage',
                       help='Print current RAM usage', default=False, action='store_true')
-    parser.add_option('-p', '--processes', dest='proc',
+    parser.add_option('-p', '--processes', dest='Processes running',
                       help='Print current number of processes running',
                       default=False, action='store_true')
     parser.add_option('-s', '--file', dest='filename', help='Path to file', default=None)
@@ -40,30 +41,26 @@ def get_output(params):
     """Function for result returning"""
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     result = []
-    if 'cpu' in params:
-        result.append('  CPU usage: {}'.format(params['cpu']))
-    if 'ram' in params:
-        result.append('  RAM usage: {}'.format(params['ram']))
-    if 'proc' in params:
-        result.append('  Processes running: {}'.format(params['proc']))
-    if not result:
-        result.append('  CPU usage: {}  Current number of processes running'\
-                      ': {}  RAM usage: {}\n'.format(params['cpu'],\
-                      params['proc'], params['ram']))
-    return  '{}  {}\n'.format(now, ''.join(result))
+    for param in params:
+        result.append('  {}:  {}'.format(param, params[param]))
+    return '{}  {}\n'.format(now, ''.join(result))
 
 
 def print_result(result, filename=None):
     """Write memory info into file"""
-   if filename:
-       try:
-           with open(filename, 'a') as res:
-               res.write(result)
-       except (FileNotFoundError, IsADirectoryError, PermissionError, OSError) as err:
-           print 'Failed to write into file {}: {}'.format(filename, err)
-           return 2
-   else:
-       print result
+    if filename:
+        try:
+            with open(filename, 'a') as res:
+                res.write(result)
+        except  (OSError, IOError), (error, message):
+            if error == errno.ENOENT:
+               print 'There is no such file'
+            elif error == errno.EPERM:
+               print 'You have no permission for this operation'
+            else:
+               print message
+    else:
+        print result
 
 
 def main():
