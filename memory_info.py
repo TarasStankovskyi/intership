@@ -9,7 +9,8 @@ import subprocess
 
 COMMANDS = {'ram':{'format':'RAM usage', 'cmd':"free -m | grep Mem | awk '{print $4/$2*100}'"},
             'cpu':{'format':'CPU usage', 'cmd':"top -b -n1 | grep 'Cpu(s)' | awk '{print $2+$4}'"},
-            'proc':{'format':'Processes running', 'cmd':"ps -c | grep -v 'PID'| wc -l"}}
+            'proc':{'format':'Processes running', 'cmd':"ps -c | grep -v 'PID'| wc -l"},
+            'user':{'format':'Current user', 'cmd':'echo "$USER"'}}
 
 
 def get_optparse():
@@ -25,6 +26,8 @@ def get_optparse():
                       help='Print current number of processes running',
                       default=False, action='store_true')
     parser.add_option('-s', '--file', dest='filename', help='Path to file', default=None)
+    parser.add_option('-u', '--user', dest='user',
+                      help='Print current user', default=False, action='store_true')
 
     options, _ = parser.parse_args()
     return vars(options)
