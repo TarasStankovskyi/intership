@@ -3,6 +3,7 @@
 import time
 import sys
 import errno
+import logging
 import optparse
 import subprocess
 
@@ -55,21 +56,26 @@ def print_result(result, filename=None):
             with open(filename, 'a') as res:
                 res.write(result)
         except  (OSError, IOError) as err:
-            print 'Failed to write into file {}: {}'.format(filename, err)
+            logging.exception('Failed to write into file {}: {}'.format(filename, err))
     else:
-        print result
+        logging.info(result + '\n')
 
 
 def main():
     """ Function provide information about CPU, RAM usage and processes running  """
+    logging.basicConfig(format='%(filename)s[LINE:%(lineno)d]#%(levelname)-8s'\
+                               '[%(asctime)s] %(message)s', level=logging.DEBUG)
+    logging.info('Script started the job')
     options = get_optparse()                   # getting options from optpaarse
     args = [key for key, value in options.items() if value and key in COMMANDS]
     if not args:
         args = COMMANDS.keys()
     params = {}
+    logging.info('Operating with options')
     for cmd in args:
         params[cmd] = sys_call(cmd)
     result = get_output(params)                # formation output
+    logging.info('Almsot finished')
     print_result(result, options['filename'])
 
 
