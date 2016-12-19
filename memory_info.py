@@ -51,13 +51,8 @@ def print_result(result, filename=None):
         try:
             with open(filename, 'a') as res:
                 res.write(result)
-        except  (OSError, IOError), (error, message):
-            if error == errno.ENOENT:
-                print 'There is no such file'
-            elif error == errno.EPERM:
-                print 'You have no permission for this operation'
-            else:
-                print message
+        except  (OSError, IOError) as err:
+            print 'Failed to write into file {}: {}'.format(filename, err)
     else:
         print result
 
@@ -67,8 +62,7 @@ def main():
     options = get_optparse()                   # getting options from optpaarse
     args = [key for key, value in options.items() if value and key in COMMANDS]
     if not args:
-        for arg in COMMANDS:
-            args.append(arg)
+        args = COMMANDS.keys()
     params = {}
     for cmd in args:
         params[cmd] = sys_call(cmd)
