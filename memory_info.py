@@ -58,7 +58,7 @@ def print_result(result, filename=None):
         except  (OSError, IOError) as err:
             logging.exception('Failed to write into file {}: {}'.format(filename, err))
     else:
-        logging.info(result + '\n')
+        print result
 
 
 def main():
@@ -67,13 +67,17 @@ def main():
                                '[%(asctime)s] %(message)s', level=logging.DEBUG)
     logging.info('Script started the job')
     options = get_optparse()                   # getting options from optpaarse
+    logging.debug("Program's option dict : %s", options)
     args = [key for key, value in options.items() if value and key in COMMANDS]
+    logging.debug('Arguments that have True value : %s ', args)
     if not args:
         args = COMMANDS.keys()
+    logging.debug('Arguments that have True value : %s ', args)
     params = {}
     logging.info('Operating with options')
     for cmd in args:
         params[cmd] = sys_call(cmd)
+    logging.debug('Params : %s', params)
     result = get_output(params)                # formation output
     logging.info('Almsot finished')
     print_result(result, options['filename'])
