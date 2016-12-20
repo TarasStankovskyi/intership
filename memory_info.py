@@ -1,6 +1,6 @@
 """ Script for gathering host information """
 
-import time
+
 import sys
 import errno
 import logging
@@ -42,11 +42,10 @@ def sys_call(option):
 
 def get_output(params):
     """Function for result returning"""
-    now = time.strftime("%Y-%m-%d %H:%M:%S")
     result = []
     for param in params:
         result.append('  {}:  {}'.format(COMMANDS[param]['format'], params[param]))
-    return '{}  {}\n'.format(now, ''.join(result))
+    return '\n{}\n'.format(''.join(result))
 
 
 def print_result(result, filename=None):
@@ -58,7 +57,7 @@ def print_result(result, filename=None):
         except  (OSError, IOError) as err:
             logging.exception('Failed to write into file {}: {}'.format(filename, err))
     else:
-        print result
+        logging.info(result)
 
 
 def main():
@@ -76,6 +75,7 @@ def main():
     params = {}
     logging.info('Operating with options')
     for cmd in args:
+        logging.info('%s is running', cmd)
         params[cmd] = sys_call(cmd)
     logging.debug('Params : %s', params)
     result = get_output(params)                # formation output
