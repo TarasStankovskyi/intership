@@ -6,6 +6,7 @@ import errno
 import logging
 import optparse
 import subprocess
+import logging.handlers
 
 
 COMMANDS = {'ram':{'format':'RAM usage', 'cmd':"free -m | grep Mem | awk '{print $4/$2*100}'"},
@@ -13,6 +14,8 @@ COMMANDS = {'ram':{'format':'RAM usage', 'cmd':"free -m | grep Mem | awk '{print
             'proc':{'format':'Processes running', 'cmd':"ps -c | grep -v 'PID'| wc -l"},
             'user':{'format':'Current user', 'cmd':'echo "$USER"'}}
 
+FORMATTER = logging.Formatter('Line : %(lineno)d - %(asctime)s -'\
+                                  '%(name)s - %(levelname)s - %(message)s')
 
 def get_optparse():
     """Function for optparse option"""
@@ -45,41 +48,61 @@ def get_output(params):
     result = []
     for param in params:
         result.append('  {}:  {}'.format(COMMANDS[param]['format'], params[param]))
-    return '\n{}\n'.format(''.join(result))
+    return '\n{}'.format(''.join(result))
 
 
 def print_result(result, filename=None):
-    """Write memory info into file"""
+    """Write memory info into file or print in stdout"""
+    file_handler = logging.getLogger(__name__)
+    file_handler.setLevel(logging.INFO)
+    fh = logging.FileHandler('{}.log'.format(filename))
+
+    fh.setFormatter(FORMATTER)
+    file_handler.propagate = False
+    file_handler.addHandler(fh)
+
+    console = logging.getLogger('main')
+    console.setLevel(logging.INFO)
+    ch = logging.StreamHandler()
+    ch.setFormatter(FORMATTER)
+    console.propagate = False
+    console.addHandler(ch)
+
     if filename:
         try:
-            with open(filename, 'a') as res:
-                res.write(result)
+            file_handler.info(result)
         except  (OSError, IOError) as err:
-            logging.exception('Failed to write into file {}: {}'.format(filename, err))
+            logging.exception('Failed to write into file : {}'.format(err))
     else:
-        logging.info(result)
+        console.info(result)
 
 
 def main():
     """ Function provide information about CPU, RAM usage and processes running  """
-    logging.basicConfig(format='%(filename)s[LINE:%(lineno)d]#%(levelname)-8s'\
-                               '[%(asctime)s] %(message)s', level=logging.DEBUG)
-    logging.info('Script started the job')
+    log_handler = logging.getLogger('memory_info')
+    log_handler.setLevel(logging.INFO)
+    lh = logging.handlers.SysLogHandler(address='/dev/log',
+                                        facility=logging.handlers.SysLogHandler.LOG_LOCAL7)
+    lh.setFormatter(FORMATTER)
+    log_handler.propagate = False
+    log_handler.addHandler(lh)
+
+    log_handler.info('Script started the job')
     options = get_optparse()                   # getting options from optpaarse
-    logging.debug("Program's option dict : %s", options)
+    log_handler.debug("Program's option dict : %s", options)
     args = [key for key, value in options.items() if value and key in COMMANDS]
-    logging.debug('Arguments that have True value : %s ', args)
+    log_handler.debug('Arguments that have True value : %s ', args)
     if not args:
         args = COMMANDS.keys()
-    logging.debug('Arguments that have True value : %s ', args)
+    log_handler.debug('Arguments that have True value : %s ', args)
     params = {}
-    logging.info('Operating with options')
+    log_handler.info('Operating with options')
     for cmd in args:
-        logging.info('%s is running', cmd)
+        log_handler.debug('%s is running', cmd)
         params[cmd] = sys_call(cmd)
-    logging.debug('Params : %s', params)
+    log_handler.debug('Params : %s', params)
     result = get_output(params)                # formation output
-    logging.info('Almsot finished')
+    log_handler.info('Almsot finished')
     print_result(result, options['filename'])
 
 
