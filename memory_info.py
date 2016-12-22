@@ -17,6 +17,7 @@ COMMANDS = {'ram':{'format':'RAM usage', 'cmd':"free -m | grep Mem | awk '{print
 FORMATTER = logging.Formatter('Line : %(lineno)d - %(asctime)s -'\
                                   '%(name)s - %(levelname)s - %(message)s')
 
+
 def get_optparse():
     """Function for optparse option"""
     usage = "Usage: %prog -s path to file -a append iformation to existing file "
@@ -51,59 +52,72 @@ def get_output(params):
     return '\n{}'.format(''.join(result))
 
 
-def print_result(result, filename=None):
-    """Write memory info into file or print in stdout"""
-    file_handler = logging.getLogger(__name__)
-    file_handler.setLevel(logging.INFO)
-    fh = logging.FileHandler('{}.log'.format(filename))
-
-    fh.setFormatter(FORMATTER)
-    file_handler.propagate = False
-    file_handler.addHandler(fh)
-
-    console = logging.getLogger('main')
-    console.setLevel(logging.INFO)
-    ch = logging.StreamHandler()
-    ch.setFormatter(FORMATTER)
-    console.propagate = False
-    console.addHandler(ch)
+def set_up_logger(filename=None):
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
 
     if filename:
-        try:
-            file_handler.info(result)
-        except  (OSError, IOError) as err:
-            logging.exception('Failed to write into file : {}'.format(err))
+        fh = logging.FileHandler('{}.log'.format(filename))
+        fh.setFormatter(FORMATTER)
+        logger.addHandler(fh)
     else:
-        console.info(result)
+        ch = logging.StreamHandler()
+        ch.setFormatter(FORMATTER)
+        logger.addHandler(ch)
+    return logger
 
 
-def main():
-    """ Function provide information about CPU, RAM usage and processes running  """
-    log_handler = logging.getLogger('memory_info')
-    log_handler.setLevel(logging.INFO)
+def print_result(result):
+    """Write memory info into file or print in stdout"""
+    logger = set_up_logger()
+    logger.info(result)
+    return 0
+
+
+def log_in_file(result, filename):
+    logger = set_up_logger(filename)
+    try:
+        logger.info(result)
+    except(OSError, IOError) as err:
+        logging.exception('Failed to write into file : {}'.format(err))
+    return 0
+
+
+def sys_logging():
+    sys_log = logging.getLogger('memory_info')
+    sys_log.setLevel(logging.INFO)
     lh = logging.handlers.SysLogHandler(address='/dev/log',
                                         facility=logging.handlers.SysLogHandler.LOG_LOCAL7)
     lh.setFormatter(FORMATTER)
-    log_handler.propagate = False
-    log_handler.addHandler(lh)
+    sys_log.propagate = False
+    sys_log.addHandler(lh) 
+    return sys_log
 
-    log_handler.info('Script started the job')
+def main():
+    """ Function provide information about CPU, RAM usage and processes running  """
+    sys_log = sys_logging()
+    sys_log.info('Script started the job')
     options = get_optparse()                   # getting options from optpaarse
-    log_handler.debug("Program's option dict : %s", options)
+    sys_log.debug("Program's option dict : %s", options)
     args = [key for key, value in options.items() if value and key in COMMANDS]
-    log_handler.debug('Arguments that have True value : %s ', args)
+    sys_log.debug('Arguments that have True value : %s ', args)
     if not args:
         args = COMMANDS.keys()
-    log_handler.debug('Arguments that have True value : %s ', args)
+    sys_log.debug('Arguments that have True value : %s ', args)
     params = {}
-    log_handler.info('Operating with options')
+    sys_log.info('Operating with options')
     for cmd in args:
-        log_handler.debug('%s is running', cmd)
+        sys_log.debug('%s is running', cmd)
         params[cmd] = sys_call(cmd)
-    log_handler.debug('Params : %s', params)
+    sys_log.debug('Params : %s', params)
     result = get_output(params)                # formation output
-    log_handler.info('Almsot finished')
-    print_result(result, options['filename'])
+    sys_log.info('Almsot finished')
+
+    if options['filename']:
+        log_in_file(result, options['filename'])
+    else:
+        print_result(result)
 
 
 if __name__ == '__main__':
