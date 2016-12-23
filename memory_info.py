@@ -53,37 +53,31 @@ def get_output(params):
     return '\n{}'.format(''.join(result))
 
 
-def log_results(result, filename=None):
+def log_results(result, logger):
     """Write memory info into file or print in stdout"""
-    if filename:
-        logger = get_logger('memory_info_results', handler_type='file', filename=filename)
-        try:
-            logger.info(result)
-        except (OSError, IOError) as err:
-            logger.exception('Failed to write into file {}: {}'.format(filename, err))
-    else:
-        logger = get_logger('memory_info_results', 'stream')
+    logger = logger
+    try:
         logger.info(result)
+    except (OSError, IOError) as err:
+        logger.exception('Failed to write into file {}: {}'.format(filename, err))
 
 
-def get_logger(name, handler_type='stream', level=logging.INFO, propagate=False, filename=None):
-    opt = {'stream': logging.StreamHandler(),
-           'file': logging.FileHandler('{}.log'.format(filename)),
-           'syslog': logging.handlers.SysLogHandler(address='/dev/log',
-                                             facility=logging.handlers.SysLogHandler.LOG_LOCAL7)}
+def get_logger(name, handler_type=logging.StreamHandler(), level=logging.INFO,
+               propagate=False):
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.propagate = propagate
-    if handler_type in opt:
-        log = opt[handler_type]
-        log.setFormatter(FORMATTER)
-        logger.addHandler(log)
+    lh = handler_type
+    lh.setFormatter(FORMATTER)
+    logger.addHandler(lh)
     return logger
 
 
 def main():
     """ Function provide information about CPU, RAM usage and processes running """
-    sys_log = get_logger('memory_info', 'syslog')
+    sys_log = get_logger('memory_info',
+                         logging.handlers.SysLogHandler(address='/dev/log',
+                         facility=logging.handlers.SysLogHandler.LOG_LOCAL7))
     sys_log.info('Script started the job')
     options = get_optparse()                   # getting options from optpaarse
     sys_log.debug("Program's option dict : %s", options)
@@ -100,8 +94,11 @@ def main():
     sys_log.debug('Params : %s', params)
     result = get_output(params)                # formation output
     sys_log.info('Almsot finished')
-
-    log_results(result, options['filename'])
+    if options['filename']:
+        log_results(result, get_logger('memory_info_results', handler_type=logging.FileHandler('{}.'
+                                      'log'.format(options['filename']))))
+    else:
+        log_results(result, get_logger('memory_info_results'))
 
 if __name__ == '__main__':
     sys.exit(main())
