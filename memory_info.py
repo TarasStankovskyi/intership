@@ -55,7 +55,6 @@ def get_output(params):
 
 def log_results(result, logger):
     """Write memory info into file or print in stdout"""
-    logger = logger
     try:
         logger.info(result)
     except (OSError, IOError) as err:
@@ -93,12 +92,14 @@ def main():
         params[cmd] = sys_call(cmd)
     sys_log.debug('Params : %s', params)
     result = get_output(params)                # formation output
-    sys_log.info('Almsot finished')
+    sys_log.info('Formatting output')
     if options['filename']:
-        log_results(result, get_logger('memory_info_results', handler_type=logging.FileHandler('{}.'
-                                      'log'.format(options['filename']))))
+        handler = logging.FileHandler(options['filename'])
     else:
-        log_results(result, get_logger('memory_info_results'))
+        handler = logging.StreamHandler()
+    logger = get_logger('memory_info_results', handler)
+    log_results(result, logger)
+    sys_log.info('Finished')
 
 if __name__ == '__main__':
     sys.exit(main())
