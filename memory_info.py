@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """ Script for gathering host information """
 
 
@@ -52,51 +53,37 @@ def get_output(params):
     return '\n{}'.format(''.join(result))
 
 
-def set_up_logger(filename=None):
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    logger.propagate = False
-
+def log_results(result, filename=None):
+    """Write memory info into file or print in stdout"""
     if filename:
-        fh = logging.FileHandler('{}.log'.format(filename))
-        fh.setFormatter(FORMATTER)
-        logger.addHandler(fh)
+        logger = get_logger('memory_info_results', handler_type='file', filename=filename)
+        try:
+            logger.info(result)
+        except (OSError, IOError) as err:
+            logger.exception('Failed to write into file {}: {}'.format(filename, err))
     else:
-        ch = logging.StreamHandler()
-        ch.setFormatter(FORMATTER)
-        logger.addHandler(ch)
+        logger = get_logger('memory_info_results', 'stream')
+        logger.info(result)
+
+
+def get_logger(name, handler_type='stream', level=logging.INFO, propagate=False, filename=None):
+    opt = {'stream': logging.StreamHandler(),
+           'file': logging.FileHandler('{}.log'.format(filename)),
+           'syslog': logging.handlers.SysLogHandler(address='/dev/log',
+                                             facility=logging.handlers.SysLogHandler.LOG_LOCAL7)}
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.propagate = propagate
+    if handler_type in opt:
+        log = opt[handler_type]
+        log.setFormatter(FORMATTER)
+        logger.addHandler(log)
     return logger
 
 
-def print_result(result):
-    """Write memory info into file or print in stdout"""
-    logger = set_up_logger()
-    logger.info(result)
-    return 0
-
-
-def log_in_file(result, filename):
-    logger = set_up_logger(filename)
-    try:
-        logger.info(result)
-    except(OSError, IOError) as err:
-        logging.exception('Failed to write into file : {}'.format(err))
-    return 0
-
-
-def sys_logging():
-    sys_log = logging.getLogger('memory_info')
-    sys_log.setLevel(logging.INFO)
-    lh = logging.handlers.SysLogHandler(address='/dev/log',
-                                        facility=logging.handlers.SysLogHandler.LOG_LOCAL7)
-    lh.setFormatter(FORMATTER)
-    sys_log.propagate = False
-    sys_log.addHandler(lh) 
-    return sys_log
-
 def main():
-    """ Function provide information about CPU, RAM usage and processes running  """
-    sys_log = sys_logging()
+    """ Function provide information about CPU, RAM usage and processes running """
+    sys_log = get_logger('memory_info', 'syslog')
     sys_log.info('Script started the job')
     options = get_optparse()                   # getting options from optpaarse
     sys_log.debug("Program's option dict : %s", options)
@@ -114,11 +101,7 @@ def main():
     result = get_output(params)                # formation output
     sys_log.info('Almsot finished')
 
-    if options['filename']:
-        log_in_file(result, options['filename'])
-    else:
-        print_result(result)
-
+    log_results(result, options['filename'])
 
 if __name__ == '__main__':
     sys.exit(main())
