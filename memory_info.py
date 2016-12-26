@@ -80,8 +80,8 @@ def main():
     sys_log.info('Script started the job')
     options = get_optparse()                   # getting options from optpaarse
     sys_log.debug("Program's option dict : %s", options)
-    args = [key for key, value in options.items() if value and key in COMMANDS] or\
-            COMMANDS.keys()
+    args = [key for key, value in options.items() if value and key in COMMANDS]\
+    or COMMANDS.keys()
     params = {arg : sys_call(arg) for arg in args}
     result = get_output(params)                # formation output
     sys_log.info('Formatting output')
