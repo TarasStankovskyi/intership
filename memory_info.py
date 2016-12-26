@@ -80,17 +80,14 @@ def main():
     sys_log.info('Script started the job')
     options = get_optparse()                   # getting options from optpaarse
     sys_log.debug("Program's option dict : %s", options)
-    args = [key for key, value in options.items() if value and key in COMMANDS]
-    sys_log.debug('Arguments that have True value : %s ', args)
-    if not args:
-        args = COMMANDS.keys()
-    sys_log.debug('Arguments that have True value : %s ', args)
     params = {}
-    sys_log.info('Operating with options')
-    for cmd in args:
-        sys_log.debug('%s is running', cmd)
-        params[cmd] = sys_call(cmd)
-    sys_log.debug('Params : %s', params)
+    for arg in options:
+        try:
+            params[arg] = sys_call(arg)
+            sys_log.debug('Params : %s', params)
+            sys_log.error('Error occur here')
+        except:
+            pass
     result = get_output(params)                # formation output
     sys_log.info('Formatting output')
     if options['filename']:
