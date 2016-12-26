@@ -58,7 +58,7 @@ def log_results(result, logger):
     try:
         logger.info(result)
     except (OSError, IOError) as err:
-        logger.exception('Failed to write into file {}: {}'.format(filename, err))
+        logger.exception('Failed to log result {}'.format(err))
 
 
 def get_logger(name, handler_type=logging.StreamHandler(), level=logging.INFO,
@@ -81,13 +81,12 @@ def main():
     options = get_optparse()                   # getting options from optpaarse
     sys_log.debug("Program's option dict : %s", options)
     params = {}
-    for arg in options:
-        try:
+    args = [key for key, value in options.items() if value and key in COMMANDS]
+    if not args:
+        args = COMMANDS.keys()
+    for arg in args:
             params[arg] = sys_call(arg)
             sys_log.debug('Params : %s', params)
-            sys_log.error('Error occur here')
-        except:
-            pass
     result = get_output(params)                # formation output
     sys_log.info('Formatting output')
     if options['filename']:
