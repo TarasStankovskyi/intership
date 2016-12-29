@@ -1,0 +1,11 @@
+#Option could be True or False
+[options]
+cpu=False
+ram=False
+proc=False
+user=False
+
+#Options for logger: root, file, sys
+[loggers]
+path=intership/memory_info.ini
+logger=root

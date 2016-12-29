@@ -1,12 +1,13 @@
 #!/usr/bin/python
 """ Script for gathering host information """
 
-
 import sys
 import errno
 import logging
 import optparse
 import subprocess
+import ConfigParser
+import logging.config
 import logging.handlers
 
 
@@ -17,26 +18,6 @@ COMMANDS = {'ram':{'format':'RAM usage', 'cmd':"free -m | grep Mem | awk '{print
 
 FORMATTER = logging.Formatter('Line : %(lineno)d - %(asctime)s -'\
                                   '%(name)s - %(levelname)s - %(message)s')
-
-
-def get_optparse():
-    """Function for optparse option"""
-    usage = "Usage: %prog -s path to file -a append iformation to existing file "
-    parser = optparse.OptionParser(usage=usage)
-
-    parser.add_option('-c', '--cpu', dest='cpu',
-                      help='Print current CPU usage', default=False, action='store_true')
-    parser.add_option('-r', '--ram', dest='ram',
-                      help='Print current RAM usage', default=False, action='store_true')
-    parser.add_option('-p', '--processes', dest='proc',
-                      help='Print current number of processes running',
-                      default=False, action='store_true')
-    parser.add_option('-s', '--file', dest='filename', help='Path to file', default=None)
-    parser.add_option('-u', '--user', dest='user',
-                      help='Print current user', default=False, action='store_true')
-
-    options, _ = parser.parse_args()
-    return vars(options)
 
 
 def sys_call(option):
@@ -61,37 +42,48 @@ def log_results(result, logger):
         logger.exception('Failed to log result {}'.format(err))
 
 
-def get_logger(name, handler_type=logging.StreamHandler(), level=logging.INFO,
-               propagate=False):
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    logger.propagate = propagate
-    lh = handler_type
-    lh.setFormatter(FORMATTER)
-    logger.addHandler(lh)
-    return logger
+def get_config_options(filename):
+    "Function return dictionary with all options from configuration file"
+    config = ConfigParser.ConfigParser()
+    config.read(filename)
+    conf_options = {}
+    for section in config.sections():
+        conf_options[section] = {}
+        for option in config.options(section):
+            conf_options[section][option] = config.get(section, option)
+    return conf_options
 
+
+def get_config_logger(options):
+    logging.config.fileConfig(options['path'])
+    logger = logging.getLogger(options['logger'])
+    return logger
 
 def main():
     """ Function provide information about CPU, RAM usage and processes running """
-    sys_log = get_logger('memory_info',
-                         logging.handlers.SysLogHandler(address='/dev/log',
-                         facility=logging.handlers.SysLogHandler.LOG_LOCAL7))
-    sys_log.info('Script started the job')
-    options = get_optparse()                   # getting options from optpaarse
-    sys_log.debug("Program's option dict : %s", options)
+    parser = optparse.OptionParser()
+    parser.add_option('-s', '--file', dest='filename', help='Path to file', default=None)
+    options, _ = parser.parse_args()
+    filename = options.filename
+
+    if not filename:
+        raise IOError("Path to config required")
+
+    conf_options = get_config_options(filename)
+    logger = get_config_logger(conf_options['loggers'])
+    logger.info('Script started the job')
+
+    options = {option : eval(conf_options['options'][option]) for option in conf_options['options']\
+              if conf_options['options'][option] in ('True','False')}
+
+    logger.debug("Program's option dict : %s", options)
     args = [key for key, value in options.items() if value and key in COMMANDS]\
            or COMMANDS.keys()
     params = {arg : sys_call(arg) for arg in args}
-    result = get_output(params)                # formation output
-    sys_log.info('Formatting output')
-    if options['filename']:
-        handler = logging.FileHandler(options['filename'])
-    else:
-        handler = logging.StreamHandler()
-    logger = get_logger('memory_info_results', handler)
+    result = get_output(params)
+    logger.info('Formatting output')
     log_results(result, logger)
-    sys_log.info('Finished')
+    logger.info('Finished')
 
 if __name__ == '__main__':
     sys.exit(main())
