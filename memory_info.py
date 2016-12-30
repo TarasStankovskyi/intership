@@ -1,7 +1,6 @@
 #!/usr/bin/python
 """ Script for gathering host information """
 
-import os
 import sys
 import logging
 import optparse
@@ -68,7 +67,7 @@ def main():
     logger.info('Script started the job')
 
     options = {option : eval(conf_options['commands'][option]) for option in conf_options['commands']\
-              if conf_options['commands'][option] in ('True','False')}
+              if conf_options['commands'][option] in ('True', 'False')}
 
     logger.debug("Program's option dict : %s", options)
     args = [key for key, value in options.items() if value and key in COMMANDS]\
