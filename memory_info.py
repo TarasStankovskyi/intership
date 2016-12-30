@@ -1,14 +1,13 @@
 #!/usr/bin/python
 """ Script for gathering host information """
 
+import os
 import sys
-import errno
 import logging
 import optparse
 import subprocess
 import ConfigParser
 import logging.config
-import logging.handlers
 
 
 COMMANDS = {'ram':{'format':'RAM usage', 'cmd':"free -m | grep Mem | awk '{print $4/$2*100}'"},
@@ -54,27 +53,22 @@ def get_config_options(filename):
     return conf_options
 
 
-def get_config_logger(options):
-    logging.config.fileConfig(options['path'])
-    logger = logging.getLogger(options['logger'])
-    return logger
-
 def main():
     """ Function provide information about CPU, RAM usage and processes running """
     parser = optparse.OptionParser()
     parser.add_option('-s', '--file', dest='filename', help='Path to file', default=None)
     options, _ = parser.parse_args()
-    filename = options.filename
-
-    if not filename:
+    if not options.filename:
         raise IOError("Path to config required")
 
-    conf_options = get_config_options(filename)
-    logger = get_config_logger(conf_options['loggers'])
+    conf_options = get_config_options(options.filename)
+    logging.config.fileConfig(conf_options['logging']['config_file'])
+    logger = logging.getLogger(conf_options['logging'].get('logger', 'stream'))
+    logger.debug('Get options from configuration file')
     logger.info('Script started the job')
 
-    options = {option : eval(conf_options['options'][option]) for option in conf_options['options']\
-              if conf_options['options'][option] in ('True','False')}
+    options = {option : eval(conf_options['commands'][option]) for option in conf_options['commands']\
+              if conf_options['commands'][option] in ('True','False')}
 
     logger.debug("Program's option dict : %s", options)
     args = [key for key, value in options.items() if value and key in COMMANDS]\
