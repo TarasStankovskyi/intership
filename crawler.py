@@ -1,59 +1,86 @@
-import argparse
+import sys
 import socket
-from lxml import html
 from urlparse import urlparse
+from lxml import html
 import requests
 
 
-
-
-PARSER = argparse.ArgumentParser()
-PARSER.add_argument('web_pages', nargs='+',
-                    help='list of web pages for crawler')
-ARGS = PARSER.parse_args()
-
 class Crawler(object):
-
-    def __init__(self, args):
-        self.output = {}
-        for x in args:
-            self.output[x] = {}
+    """Class for getting iformation about all url's domain and ip that are in web page """
 
 
-    def parse_HTML(self):
-        self.links = []
-        for source in self.output:
-            page = requests.get(source)
-            tree = html.fromstring(page.content)
-            self.links.extend([link for link in tree.xpath('//a/@href') if '://www.' in link\
-                              or 'mailto:' in link])
-            for link in self.links:
-               self.output[source][link] = []
+    def __init__(self, url):
+        """Crawler's init method
+        :Parameters:
+            -url - input url from console
+        :Return:
+            None
+        """
+        self.input_url = url
 
 
-    def set_domain(self):
-        for source in self.output:
-            for url in self.output[source]:
-               self.output[source][url].append(urlparse(url).netloc[4:])
+    def parse_html(self):
+        """Method for parsing html of input url
+        :Parameters:
+
+        :Return:
+            list of found urls
+        """
+        links = []
+        page = requests.get(self.input_url)
+        tree = html.fromstring(page.content)
+        links.extend([link for link in tree.xpath('//a/@href') if '://www.' in link\
+                     or 'mailto:' in link])
+        return links
 
 
+    def extract_domain(self, url):
+        """Method for getting domain name
+        :Parameters:
+            -url - url from page's urls
+        :Return:
+            domain name
+        """
+        return urlparse(url).netloc[4:]
 
-    def set_IP(self):
-        for source in self.output:
-            for url in self.output[source]:
-                self.output[source][url].append(socket.gethostbyname(self.output[source][url][0]))
+
+    def resolve_domain(self, url):
+        """Method for getting ip
+        :Parameters:
+            -url - url from page's urls
+        :Return:
+            ip
+        """
+        return socket.gethostbyname(url)
 
 
-    def print_out(self):
-        result = []
-        for url in self.output.values():
-            result.extend(url.items())
-        for url in result:
-            print '{} - {}\n'.format(url[0], ' '.join(url[1]))
+    def print_result(self, url, domain, ip):
+        """Method for printing result
+        :Parameters:
+            -url - url from page's urls
+            -domain - url's domain
+            -ip - url's ip
+        :Return:
+            string "URL - domain - ip"
+            example "http://www.bbc.co.uk - bbc.co.uk - 212.58.246.78"
+        """
+        print '{} - {} - {}'.format(url, domain, ip)
+
+
+    def main(self):
+        """Main class method"""
+        parsed_urls = self.parse_html()
+        for url in parsed_urls:
+            self.print_result(url, self.extract_domain(url),
+                              self.resolve_domain(self.extract_domain(url)))
+
+
+def main(urls_list):
+    """Main script function """
+    for url in urls_list:
+        Crawler(url).main()
+
 
 if __name__ == '__main__':
-    crawler = Crawler(ARGS.web_pages)
-    crawler.parse_HTML()
-    crawler.set_domain()
-    crawler.set_IP()
-    crawler.print_out()
+    sys.exit(main(sys.argv[1:]))
+
