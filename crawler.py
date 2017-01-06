@@ -18,24 +18,26 @@ class Crawler(object):
             None
         """
         self.input_urls = urls
-        self.result_list = []
-        self.parsed_links = []
+        self.result = {}
+        self._parsed_links = {}
 
 
-    def parse_html(self, url):
+    def __parse_html(self, url):
         """Method for parsing html of input url
         :Parameters:
 
         :Return:
             None
         """
+
         page = requests.get(url)
         tree = html.fromstring(page.content)
-        self.parsed_links.extend([link for link in tree.xpath('//a/@href')\
+        self._parsed_links[url] = ([link for link in tree.xpath('//a/@href')\
                                  if '://www.' in link or 'mailto:' in link])
 
 
-    def extract_url(self, url):
+
+    def __extract_url(self, url):
         """Method for getting domain and ip
         from parsed url
         :Parameters:
@@ -45,7 +47,7 @@ class Crawler(object):
         """
         domain = urlparse(url).netloc[4:]
         ip = socket.gethostbyname(domain)
-        self.result_list.append([url, domain, ip])
+        return [url, domain, ip]
 
 
     def print_result(self):
@@ -58,8 +60,9 @@ class Crawler(object):
             string "URL - domain - ip"
             example "http://www.bbc.co.uk/news/ - bbc.co.uk - 212.58.246.78"
         """
-        for res in self.result_list:
-            print '{} - {} - {}'.format(*res)
+        for result in self.result.values():
+            for res in result:
+                print '{} - {} - {}'.format(*res)
 
 
     def run(self):
@@ -69,13 +72,15 @@ class Crawler(object):
             return result list
         """
         for url in self.input_urls:
-            self.parse_html(url)
-            for link in self.parsed_links:
-                self.extract_url(link)
-        return self.result_list
+            self.__parse_html(url)
+        for link in self._parsed_links:
+            self.result[link] = []
+            for url in self._parsed_links[link]:
+                self.result[link].append(self.__extract_url(url))
+        self.print_result()
+        return self.result
 
 
 if __name__ == '__main__':
     crawler = Crawler(sys.argv[1:])
     crawler.run()
-    crawler.print_result()
