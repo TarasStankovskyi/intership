@@ -16,6 +16,8 @@ class Crawler(object):
         """
         self.input_urls = urls
         self.result = {}
+        self.__DOMAIN_MAIL_RE = re.compile(r'@(\w+.\w+)')
+        self.__DOMAIN_RE = re.compile(r'//([^/?#]*)')
 
     def __parse_html(self, url):
         """Method for parsing html of input url
@@ -44,9 +46,9 @@ class Crawler(object):
             and url's ip
         """
         if url.startswith('mailto:'):
-            domain = re.search(r'@\w+.\w+', url).group()
+            domain = re.search(self.__DOMAIN_MAIL_RE, url).group(1)
         else:
-            domain = re.search(r'//([^/?#]*)', url).group(1)
+            domain = re.search(self.__DOMAIN_RE, url).group(1)
         try:
             ip = socket.gethostbyname(domain)
         except socket.error:
