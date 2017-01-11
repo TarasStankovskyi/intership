@@ -16,7 +16,7 @@ class Crawler(object):
         """
         self.input_urls = urls
         self.result = {}
-        self.__DOMAIN_MAIL_RE = re.compile(r'@(\w+.\w+)')
+        self.__DOMAIN_MAIL_RE = re.compile(r'@([\w\-.]+)')
         self.__DOMAIN_RE = re.compile(r'//([^/?#]*)')
 
     def __parse_html(self, url):
