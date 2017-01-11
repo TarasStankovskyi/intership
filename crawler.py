@@ -1,3 +1,4 @@
+import re
 import sys
 import socket
 from lxml import html
@@ -11,51 +12,48 @@ class Crawler(object):
     def __init__(self, urls):
         """Crawler's init method
         :Parameters:
-            -urls - input urls from console
-        :Return:
-            None
+            urls - input urls from console
         """
         self.input_urls = urls
         self.result = {}
-        self._parsed_links = {}
 
     def __parse_html(self, url):
         """Method for parsing html of input url
         :Parameters:
-
+            url - url from user's input
         :Return:
-            None
+            list of all parsed links
         """
-
-        page = requests.get(url)
+        try:
+            page = requests.get(url)
+        except requests.exceptions.ConnectionError as err:
+            print '{} address is not valid'.format(url)
+            print '---------------------------------------'
         tree = html.fromstring(page.content)
-        self._parsed_links[url] = ([link for link in tree.xpath('//@href')\
-                                   if 'http' in link or 'mailto:' in link])
+        parsed_links = [link for link in tree.xpath('//@href')\
+                                   if 'http' in link or 'mailto:' in link]
+        return parsed_links
 
-    def __extract_url(self, url):
+    def __resolve_url(self, url):
         """Method for getting domain and ip
         from parsed url
         :Parameters:
-            -url - url from parsed html
+            url - url from parsed html
         :Return:
-            None
+            list which contain url, url's domain
+            and url's ip
         """
-        domain = url.split('//')[1].split('/')[0]
+        domain = re.search(r'(//([^/?#]*))', url).group()[2:]
         try:
             ip = socket.gethostbyname(domain)
-        except socket.gaierror:
-            ip = "can't extract ip"
+        except socket.error:
+            ip = None
         return [url, domain, ip]
 
     def print_result(self):
         """Method for printing result
-        :Parameters:
-            -url - url from page's urls
-            -domain - url's domain
-            -ip - url's ip
-        :Return:
-            string "URL - domain - ip"
-            example "http://www.bbc.co.uk/news/ - bbc.co.uk - 212.58.246.78"
+           example: "http://www.bbc.com : http://www.bbc.co.uk/news/
+           - bbc.co.uk - 212.58.246.78"
         """
         for key,result in self.result.items():
             for res in result:
@@ -63,20 +61,14 @@ class Crawler(object):
 
     def run(self):
         """Main class method
-        :Parameters:
         :Return:
-            return result list
+            result list
         """
         for url in self.input_urls:
-            try:
-                self.__parse_html(url)
-            except requests.exceptions.ConnectionError as err:
-                print '{} address is not valid'.format(url)
-                print '---------------------------------------'
-        for link in self._parsed_links:
-            self.result[link] = []
-            for url in self._parsed_links[link]:
-                self.result[link].append(self.__extract_url(url))
+            links = self.__parse_html(url)
+            self.result[url] = []
+            for link in links:
+                self.result[url].append(self.__resolve_url(link))
         return self.result
 
 
