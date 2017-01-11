@@ -46,9 +46,9 @@ class Crawler(object):
             and url's ip
         """
         if url.startswith('mailto:'):
-            domain = re.search(self.__DOMAIN_MAIL_RE, url).group(1)
+            domain = self.__DOMAIN_MAIL_RE.search(url).group(1)
         else:
-            domain = re.search(self.__DOMAIN_RE, url).group(1)
+            domain = self.__DOMAIN_RE.search(url).group(1)
         try:
             ip = socket.gethostbyname(domain)
         except socket.error:
