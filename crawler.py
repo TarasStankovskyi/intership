@@ -43,7 +43,10 @@ class Crawler(object):
             list which contain url, url's domain
             and url's ip
         """
-        domain = re.search(r'(//([^/?#]*))', url).group()[2:]
+        if url.startswith('mailto:'):
+            domain = re.search(r'@\w+.\w+', url).group()
+        else:
+            domain = re.search(r'//([^/?#]*)', url).group(1)
         try:
             ip = socket.gethostbyname(domain)
         except socket.error:
