@@ -3,6 +3,8 @@ import sys
 import socket
 from lxml import html
 import requests
+import process_result as result
+import config
 
 
 class Crawler(object):
@@ -19,6 +21,7 @@ class Crawler(object):
         self.__DOMAIN_MAIL_RE = re.compile(r'@([\w\-.]+)')
         self.__DOMAIN_RE = re.compile(r'//([^/?#]*)')
 
+
     def __parse_html(self, url):
         """Method for parsing html of input url
         :Parameters:
@@ -28,7 +31,7 @@ class Crawler(object):
         """
         try:
             page = requests.get(url)
-        except requests.exceptions.ConnectionError as err:
+        except requests.exceptions.ConnectionError:
             print '{} address is not valid'.format(url)
             print '---------------------------------------'
         tree = html.fromstring(page.content)
@@ -60,7 +63,7 @@ class Crawler(object):
            example: "http://www.bbc.com : http://www.bbc.co.uk/news/
            - bbc.co.uk - 212.58.246.78"
         """
-        for key,result in self.result.items():
+        for key, result in self.result.items():
             for res in result:
                 print '{} : {} - {} - {}'.format(key, *res)
 
@@ -74,11 +77,15 @@ class Crawler(object):
             self.result[url] = []
             for link in links:
                 self.result[url].append(self.__resolve_url(link))
+        self.print_result()
         return self.result
 
 
 if __name__ == '__main__':
+    conf = config.Config("/home/user1/intership/crawler.conf")
+    conf = conf.parse_config_options()
     crawler = Crawler(sys.argv[1:])
-    crawler.run()
-    crawler.print_result()
+    crawler = crawler.run()
+    res = result.Crawler_Handler(conf)
+    res.write_in_db(crawler)
 
