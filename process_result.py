@@ -13,61 +13,79 @@ class Storage(object):
         self.__cursor = self.__db.cursor()
 
     def insert_url(self, url):
-        self.__cursor.execute(
-                              """INSERT INTO url (url, counter)
-                              VALUES (%s, 1)
-                              ON DUPLICATE KEY
-                              UPDATE counter=counter+1""", [url])
-        self.__db.commit()
-        return  self.__cursor.lastrowid
+        try:
+            self.__cursor.execute(
+                                  """INSERT INTO url (url, counter)
+                                  VALUES (%s, 1)
+                                  ON DUPLICATE KEY
+                                  UPDATE counter=counter+1""", [url])
+            self.__db.commit()
+        except:
+            self.__db.rollback()
 
-    def insert_domain(self, domain, url_id):
-        self.__cursor.execute(
-                              """INSERT INTO domain (domain,
-                              counter, url_id)
-                              VALUES (%s, 1, %s)
-                              ON DUPLICATE KEY
-                              UPDATE counter=counter+1
-                              """, [domain, url_id])
-        self.__db.commit()
-        return  self.__cursor.lastrowid
+    def insert_domains(self, domains, url):
+        for domain in domains:
+            try:
+                self.__cursor.execute(
+                                       """INSERT INTO domain (domain,
+                                       counter, url)
+                                       VALUES (%s, 1, %s)
+                                       ON DUPLICATE KEY
+                                       UPDATE counter=counter+1
+                                       """, [domain, url])
+                self.__db.commit()
+                self.__insert_url_domain(url, domain)
+            except:
+                self.__db.rollback()
 
-    def insert_url_domain(self, url_id, domain_id):
-        self.__cursor.execute(
-                              """INSERT IGNORE INTO url_domain (url_id,
-                              domain_id)
-                              VALUES (%s, %s)
-                              """, [url_id, domain_id])
+    def __insert_url_domain(self, url, domain):
+        try:
+            self.__cursor.execute(
+                                  """INSERT IGNORE INTO url_domain (url,
+                                  domain)
+                                  VALUES (%s, %s)
+                                  """, [url, domain])
+            self.__db.commit()
+        except:
+            self.__db.rollback()
+    def insert_mails(self, mails, url, domain):
+        for mail in mails:
+            try:
+                self.__cursor.execute(
+                                      """INSERT INTO mail (mail,  counter,
+                                      url, domain)
+                                      VALUES (%s, 1, %s, %s)
+                                      ON DUPLICATE KEY
+                                      UPDATE counter=counter+1
+                                      """, [mail, url, domain])
+                self.__db.commit()
+                self.__insert_url_mail(url, mail)
+            except:
+                self.__db.rollback()
 
-        self.__db.commit()
-    def insert_mail(self, mail, url_id, domain_id):
-        self.__cursor.execute(
-                              """INSERT INTO mail (mail,  counter,
-                              url_id, domain_id)
-                              VALUES (%s, 1, %s, %s)
-                              ON DUPLICATE KEY
-                              UPDATE counter=counter+1
-                              """, [mail, url_id, domain_id])
-        self.__db.commit()
-        return self.__cursor.lastrowid
+    def __insert_url_mail(self, url, mail):
+        try:
+            self.__cursor.execute(
+                                  """INSERT IGNORE INTO url_mail (url,
+                                  mail)
+                                  VALUES (%s, %s)
+                                  """, [url, mail])
+            self.__db.commit()
+        except:
+            self.__db.rollback()
 
-    def url_mail(self, url_id, mail_id):
-        self.__cursor.execute(
-                              """INSERT IGNORE INTO url_mail (url_id,
-                              mail_id)
-                              VALUES (%s, %s)
-                              """, [url_id, mail_id])
-        self.__db.commit()
-
-    def insert_ip(self, ip, domain_id):
-        self.__cursor.execute(
-                              """INSERT INTO ip (ip, counter, domain_id)
-                              VALUES (%s, 1, %s)
-                              ON DUPLICATE KEY
-                              UPDATE counter=counter+1
-                              """, [ip, domain_id])
-        self.__db.commit()
-
+    def insert_ips(self, ips, domain):
+        for ip in ips:
+            try:
+                self.__cursor.execute(
+                                      """INSERT INTO ip (ip, counter, domain)
+                                      VALUES (%s, 1, %s)
+                                      ON DUPLICATE KEY
+                                      UPDATE counter=counter+1
+                                      """, [ip, domain])
+                self.__db.commit()
+            except:
+                self.__db.rollback()
 
 
 
