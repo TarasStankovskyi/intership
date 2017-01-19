@@ -80,12 +80,3 @@ class Crawler(object):
         self.print_result()
         return self.result
 
-
-if __name__ == '__main__':
-    conf = config.Config("/home/user1/intership/crawler.conf")
-    conf = conf.parse_config_options()
-    crawler = Crawler(sys.argv[1:])
-    crawler = crawler.run()
-    res = result.Crawler_Handler(conf)
-    res.write_in_db(crawler)
-

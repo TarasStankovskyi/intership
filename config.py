@@ -5,16 +5,17 @@ class Config(object):
 
     def __init__(self, filename):
         self.filename = filename
-        self.__config_options = {}
+        self.config_options = {}
+        self.__parse_config_options()
 
-    def parse_config_options(self):
+    def __parse_config_options(self):
         config = ConfigParser.ConfigParser()
         config.read(self.filename)
         for section in config.sections():
-            self.__config_options[section] = {}
+            self.config_options[section] = {}
             for option in config.options(section):
-                self.__config_options[section][option] = config.get(section, option)
-        return self.__config_options
+                self.config_options[section][option] = config.get(section, option)
+
 
 
 
