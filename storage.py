@@ -55,16 +55,11 @@ class Storage(object):
                                UPDATE counter=counter+1
                                """, [domain, url])
                 result.append((url, domain))
-            self.__insert_url_domain(result)
-
-
-    def __insert_url_domain(self, data):
-        with self.__connection as cursor:
             cursor.executemany(
                                """INSERT IGNORE INTO url_domain (url,
                                domain)
                                VALUES (%s, %s)
-                               """, data)
+                               """, result)
 
 
     def insert_mails(self, mails, url, domain):
@@ -79,15 +74,10 @@ class Storage(object):
                                UPDATE counter=counter+1
                                """, [mail, url, domain])
                 result.append((url, mail))
-            self.__insert_url_mail(result)
-
-
-    def __insert_url_mail(self, data):
-        with self.__connection as cursor:
             cursor.executemany(
                                """INSERT IGNORE INTO url_mail (url, mail)
                                VALUES (%s, %s)
-                               """, data)
+                               """, result)
 
 
     def insert_ips(self, ips, domain):
