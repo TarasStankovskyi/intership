@@ -11,10 +11,6 @@ class DatabaseConnection(object):
     def close(self):
         self._db.close()
 
-    def __iter__(self):
-        for item in self.__cursor:
-            yield item
-
     def __enter__(self):
         self.__cursor = self._db.cursor()
         return self.__cursor
