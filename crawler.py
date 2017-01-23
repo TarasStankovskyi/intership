@@ -3,7 +3,6 @@ import sys
 import socket
 from lxml import html
 import requests
-import process_result as result
 import config
 
 
