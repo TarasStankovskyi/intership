@@ -4,26 +4,21 @@ from crawler import Crawler
 
 class Server(object):
 
-    def __init__(self, config, db_connection, db,  port=8001, que=5):
-        self.arguments = []
+    def __init__(self, db_storage, port=8001, que=5):
         self.port = port
         self.que = que
-        self.conf_object = config
-        self.conf = self.conf_object.config_options
-        self.db_connection = db_connection(self.conf)
-        self.storage = db(self.db_connection)
+        self.storage = db_storage
 
     def connect(self):
         while True:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind(('', self.port))
-            sock.listen(self.que)
-            client_socket, address = sock.accept()
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.bind(('', self.port))
+            self.sock.listen(self.que)
+            client_socket, address = self.sock.accept()
 
             print 'Listening from {}'.format(address)
 
             while True:
-                client_socket.sendall("Write down urls : \n")
                 data = client_socket.recv(1024)[:-2]
                 if data:
                     for url in data.split(' '):
@@ -31,9 +26,7 @@ class Server(object):
                 else:
                     client_socket.sendall('Processing...\n')
                     print 'No more data. Processing ...'
-                    continue
-            self.storage.close()
-            sock.close()
+                    break
 
     def _run(self, url):
         crawler = Crawler()
@@ -57,6 +50,9 @@ class Server(object):
             for domain, mails in domain_mails.items():
                 self.storage.insert_mails(mails, url, domain)
         print 'Data has been saved'
+
+    def close_connection(self):
+        self.sock.close()
 
 
 if  __name__ == '__main__':
