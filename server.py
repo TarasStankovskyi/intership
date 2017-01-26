@@ -1,46 +1,46 @@
 import socket
 from collections import defaultdict
 from crawler import Crawler
-from storage import Storage, DatabaseConnection
-import config
 
 class Server(object):
 
-    def __init__(self, port=8001, que=1):
+    def __init__(self, config, db_connection, db,  port=8001, que=5):
         self.arguments = []
         self.port = port
         self.que = que
+        self.conf_object = config
+        self.conf = self.conf_object.config_options
+        self.db_connection = db_connection(self.conf)
+        self.storage = db(self.db_connection)
 
-    def __connection(self):
-        try:
+    def connect(self):
+        while True:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind(('', self.port))
             sock.listen(self.que)
             client_socket, address = sock.accept()
+
             print 'Listening from {}'.format(address)
+
             while True:
+                client_socket.sendall("Write down urls : \n")
                 data = client_socket.recv(1024)[:-2]
                 if data:
-                    self.arguments.append(data)
+                    for url in data.split(' '):
+                        self._run(url)
                 else:
+                    client_socket.sendall('Processing...\n')
                     print 'No more data. Processing ...'
-                    break
-
-        finally:
+                    continue
+            self.storage.close()
             sock.close()
 
-    def run(self):
-        self.__connection()
-        conf_object = config.Config("/home/user1/intership/crawler.conf")
-        conf = conf_object.config_options
-        crawler = Crawler(self.arguments)
-
-        data = crawler.run()
-        connection = DatabaseConnection(conf)
-        storage = Storage(connection)
+    def _run(self, url):
+        crawler = Crawler()
+        data = crawler.run(url)
 
         for url, data in data.items():
-            storage.insert_url(url)
+            self.storage.insert_url(url)
             domain_ips = defaultdict(set)
             domain_mails = defaultdict(set)
             domains = []
@@ -51,12 +51,11 @@ class Server(object):
                 if link.startswith('mailto'):
                     domain_mails[domain].add(link.split(':')[1])
 
-            storage.insert_domains(domains, url)
+            self.storage.insert_domains(domains, url)
             for domain, ips in domain_ips.items():
-                storage.insert_ips(ips, domain)
+                self.storage.insert_ips(ips, domain)
             for domain, mails in domain_mails.items():
-                storage.insert_mails(mails, url, domain)
-        storage.close()
+                self.storage.insert_mails(mails, url, domain)
         print 'Data has been saved'
 
 
