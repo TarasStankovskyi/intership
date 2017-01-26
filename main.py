@@ -1,15 +1,22 @@
 import sys
+import socket
 from collections import defaultdict
 from crawler import Crawler
 from storage import Storage, DatabaseConnection
 import config
-
+from server import Server
 
 
 if __name__ == '__main__':
+
+    server = Server()
+    conn = server.connection()
+    arguments = server.arguments
+
     conf_object = config.Config("/home/user1/intership/crawler.conf")
     config = conf_object.config_options
-    crawler = Crawler(sys.argv[1:])
+    crawler = Crawler(arguments)
+
     data = crawler.run()
     connection =  DatabaseConnection(config)
     storage = Storage(connection)
@@ -32,4 +39,4 @@ if __name__ == '__main__':
         for domain, mails in domain_mails.items():
             storage.insert_mails(list(mails), url, domain)
     storage.close()
-
+    print 'Data has been saved'
