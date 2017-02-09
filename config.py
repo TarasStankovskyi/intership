@@ -10,6 +10,7 @@ class Config(object):
 
     def __parse_config_options(self):
         config = ConfigParser.ConfigParser()
+        config.optionxform = str
         config.read(self.filename)
         for section in config.sections():
             self.config_options[section] = {}

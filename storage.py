@@ -41,7 +41,6 @@ class Storage(object):
 
     def insert_domains(self, domains, url):
         with self.__connection as cursor:
-            result = []
             for domain in domains:
                 cursor.execute(
                                """INSERT INTO domain (domain,
@@ -50,39 +49,49 @@ class Storage(object):
                                ON DUPLICATE KEY
                                UPDATE counter=counter+1
                                """, [domain, url])
-                result.append((url, domain))
-            cursor.executemany(
-                               """INSERT IGNORE INTO url_domain (url,
-                               domain)
-                               VALUES (%s, %s)
-                               """, result)
 
 
-    def insert_mails(self, mails, url, domain):
+    def insert_restricted_domains(self, domains, url):
         with self.__connection as cursor:
-            result = []
-            for mail in mails:
+            for domain in domains:
                 cursor.execute(
-                               """INSERT INTO mail (mail,  counter,
-                               url, domain)
-                               VALUES (%s, 1, %s, %s)
-                               ON DUPLICATE KEY
-                               UPDATE counter=counter+1
-                               """, [mail, url, domain])
-                result.append((url, mail))
-            cursor.executemany(
-                               """INSERT IGNORE INTO url_mail (url, mail)
-                               VALUES (%s, %s)
-                               """, result)
-
-
-    def insert_ips(self, ips, domain):
-        with self.__connection as cursor:
-            for ip in ips:
-                cursor.execute(
-                               """INSERT INTO ip (ip, counter, domain)
+                               """INSERT INTO blocked_domain (domain,
+                               counter, url)
                                VALUES (%s, 1, %s)
                                ON DUPLICATE KEY
                                UPDATE counter=counter+1
-                               """, [ip, domain])
+                               """, [domain, url])
+
+    def insert_integer_ips(self, data, url):
+        with self.__connection as cursor:
+            for domain, ip in data:
+                cursor.execute(
+                               """INSERT INTO integer_ip (ip, domain,
+                               counter, url)
+                               VALUES (%s, %s, 1, %s)
+                               ON DUPLICATE KEY
+                               UPDATE counter=counter+1
+                               """, [ip, domain, url])
+
+    def insert_cidr_ips(self, ips, url):
+        with self.__connection as cursor:
+            for ip in ips:
+                cursor.execute(
+                               """INSERT INTO cidr_ips (ip, counter, url)
+                               VALUES (%s, 1, %s)
+                               ON DUPLICATE KEY
+                               UPDATE counter=counter+1
+                               """, [ip, url])
+
+
+    def insert_filtered_mails(self, mails, url):
+        with self.__connection as cursor:
+            for mail in mails:
+                cursor.execute(
+                               """INSERT INTO filtered_mails (mail, counter,
+                               url)
+                               VALUES (%s, 1, %s)
+                               ON DUPLICATE KEY
+                               UPDATE counter=counter+1
+                               """, [mail, url])
 
