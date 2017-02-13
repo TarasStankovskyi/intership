@@ -2,16 +2,17 @@ import socket
 from threading import Thread
 from collections import defaultdict
 from crawler import Crawler
+import config
 
 
 class Server(object):
 
-    def __init__(self, db_storage, plugins_config, port=8001, que=5):
+    def __init__(self, db_storage, port=8001, que=5):
         self.port = port
         self.que = que
         self.storage = db_storage
-        self.plugins_config = plugins_config
-
+        self.active_plugins = []
+        self.__parse_config()
 
     def connect(self):
         while True:
@@ -24,21 +25,23 @@ class Server(object):
                 print 'Listening from {}'.format(address)
                 Thread(target=self._run, args=(client_socket, address)).start()
 
-    def execute_plugins(self, data):
-        module = __import__(self.plugins_config['modules']['module'])
-        active_plugins = [plugin for plugin in self.plugins_config['plugins']\
-                         if self.plugins_config['plugins'][plugin]]
-        for plugin in active_plugins:
-            Plugin_Class = getattr(module, plugin)
-            Plugin_Class(self.storage).run(data)
-
+    def __parse_config(self):
+        conf_obj = config.Config('/home/user1/intership/server.conf')
+        config_options = conf_obj.config_options
+        module = __import__(config_options['module']['name'])
+        self.active_plugins = [getattr(module, plugin) for plugin in\
+                               config_options['plugins'] if\
+                               config_options['plugins'][plugin] in\
+                               ('True', 'False')]
 
     def _execute(self, data):
         crawler = Crawler()
         for url in data.split(' '):
             data = crawler.run(url)
             self.storage.insert_url(url)
-            self.execute_plugins(data)
+            for plugin in self.active_plugins:
+                plugin(self.storage, data).run()
+
 
     def _run(self, client_socket, address):
         while True:
@@ -46,7 +49,7 @@ class Server(object):
                 data = client_socket.recv(1024)
                 if data:
                         self._execute(data)
-                        client_socket.send('Data has been saved')
+                        client_socket.send('Data has been saved\n')
                 else:
                     client_socket.send('Processing...\n')
                     break
