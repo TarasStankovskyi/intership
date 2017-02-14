@@ -22,5 +22,5 @@ class Config(object):
 
 
 if __name__ == "__main__":
-    example = Config("/home/user1/intership/crawler.conf")
-    print example.filename
+    example = Config("/home/user1/intership/plugins.conf")
+    print example.config_options

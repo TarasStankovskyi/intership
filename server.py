@@ -28,11 +28,13 @@ class Server(object):
     def __parse_config(self):
         conf_obj = config.Config('/home/user1/intership/server.conf')
         config_options = conf_obj.config_options
-        module = __import__(config_options['module']['name'])
-        self.active_plugins = [getattr(module, plugin) for plugin in\
-                               config_options['plugins'] if\
-                               config_options['plugins'][plugin] in\
-                               ('True', 'False')]
+        active_plugins = [plugin for plugin in\
+                         config_options['plugins'] if\
+                         config_options['plugins'][plugin] in\
+                         ('True', 'False')]
+        for plugin in active_plugins:
+            module = __import__(config_options['modules'][plugin])
+            self.active_plugins.append(getattr(module, plugin))
 
     def _execute(self, data):
         crawler = Crawler()
