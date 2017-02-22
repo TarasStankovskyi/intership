@@ -22,5 +22,5 @@ class Config(object):
 
 
 if __name__ == "__main__":
-    example = Config("/home/user1/intership/plugins.conf")
+    example = Config("/home/user1/intership/cidr_ips.conf")
     print example.config_options

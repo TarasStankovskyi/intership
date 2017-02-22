@@ -1,6 +1,7 @@
-from server import Server
 import config
+from server import Server
 from storage import Storage, DatabaseConnection
+
 
 if __name__ == '__main__':
     conf_obj = config.Config("/home/user1/intership/crawler.conf")

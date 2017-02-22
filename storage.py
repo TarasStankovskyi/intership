@@ -34,7 +34,7 @@ class Storage(object):
     def insert_url(self, url):
         with self.__connection as cursor:
             cursor.execute(
-                           """INSERT INTO url (url, counter)
+                           """INSERT INTO urls (url, counter)
                            VALUES (%s, 1)
                            ON DUPLICATE KEY
                            UPDATE counter=counter+1""", [url])
@@ -43,7 +43,7 @@ class Storage(object):
         with self.__connection as cursor:
             for domain in domains:
                 cursor.execute(
-                               """INSERT INTO domain (domain,
+                               """INSERT INTO domains (domain,
                                counter, url)
                                VALUES (%s, 1, %s)
                                ON DUPLICATE KEY
@@ -55,7 +55,7 @@ class Storage(object):
         with self.__connection as cursor:
             for domain in domains:
                 cursor.execute(
-                               """INSERT INTO blocked_domain (domain,
+                               """INSERT INTO blocked_domains (domain,
                                counter, url)
                                VALUES (%s, 1, %s)
                                ON DUPLICATE KEY
@@ -66,7 +66,7 @@ class Storage(object):
         with self.__connection as cursor:
             for domain, ip in data:
                 cursor.execute(
-                               """INSERT INTO integer_ip (ip, domain,
+                               """INSERT INTO integer_ips (ip, domain,
                                counter, url)
                                VALUES (%s, %s, 1, %s)
                                ON DUPLICATE KEY

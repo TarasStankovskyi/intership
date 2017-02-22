@@ -1,20 +1,24 @@
-from storage import Storage, DatabaseConnection
 import config
+from storage import Storage, DatabaseConnection
 from netaddr import IPAddress, IPRange
 
 
 
 class BasePlugin(object):
-    def __init__(self, storage, data):
-        self.storage = storage
-        self.data = data
-        self.conf = config.Config('/home/user1/intership/plugins.conf')
-        self.config_options = self.conf.config_options
 
     def _store(self):
         raise NotImplementedError('You need to implement this method')
 
-    def run(self):
+    def get_storage(self):
+        raise NotImplementedError('You need to implement this method')
+
+    def get_config_options(self):
+        raise NotImplementedError('You need to implement this method')
+
+    def run(self, data):
+        self.data = data
+        self.get_config_options()
+        self.get_storage()
         self._store()
 
 
