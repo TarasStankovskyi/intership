@@ -1,4 +1,5 @@
 import MySQLdb
+from collections import Counter
 
 class DatabaseConnection(object):
     def __init__(self, config):
@@ -41,57 +42,64 @@ class Storage(object):
 
     def insert_domains(self, domains, url):
         with self.__connection as cursor:
-            for domain in domains:
+            for domain in Counter(domains):
                 cursor.execute(
                                """INSERT INTO domains (domain,
                                counter, url)
-                               VALUES (%s, 1, %s)
+                               VALUES (%s, %s, %s)
                                ON DUPLICATE KEY
-                               UPDATE counter=counter+1
-                               """, [domain, url])
+                               UPDATE counter=counter+%s
+                               """, [domain, Counter(domain)[domain], url,
+                                     Counter(domain)[domain]])
 
 
     def insert_restricted_domains(self, domains, url):
         with self.__connection as cursor:
-            for domain in domains:
+            for domain in Counter(domains):
                 cursor.execute(
                                """INSERT INTO blocked_domains (domain,
                                counter, url)
-                               VALUES (%s, 1, %s)
+                               VALUES (%s, %s, %s)
                                ON DUPLICATE KEY
-                               UPDATE counter=counter+1
-                               """, [domain, url])
+                               UPDATE counter=counter+%s
+                               """, [domain, Counter(domains)[domain], url,
+                                    Counter(domains)[domain]])
 
     def insert_integer_ips(self, data, url):
         with self.__connection as cursor:
-            for domain, ip in data:
+            results = []
+            for domain, ip in Counter(data):
+                results.append([domain, ip, Counter(data)[domain, ip]])
+            for domain, ip, counter in results:
                 cursor.execute(
                                """INSERT INTO integer_ips (ip, domain,
                                counter, url)
-                               VALUES (%s, %s, 1, %s)
+                               VALUES (%s, %s, %s, %s)
                                ON DUPLICATE KEY
-                               UPDATE counter=counter+1
-                               """, [ip, domain, url])
+                               UPDATE counter=counter+%s
+                               """, [ip, domain, counter, url, counter])
 
     def insert_cidr_ips(self, ips, url):
         with self.__connection as cursor:
-            for ip in ips:
+            for ip in Counter(ips):
                 cursor.execute(
                                """INSERT INTO cidr_ips (ip, counter, url)
-                               VALUES (%s, 1, %s)
+                               VALUES (%s, %s, %s)
                                ON DUPLICATE KEY
-                               UPDATE counter=counter+1
-                               """, [ip, url])
+                               UPDATE counter=counter+%s
+                               """, [ip, Counter(ips)[ip], url,
+                                    Counter(ips)[ip]])
 
 
     def insert_filtered_mails(self, mails, url):
         with self.__connection as cursor:
-            for mail in mails:
+            for mail in Counter(mails):
                 cursor.execute(
                                """INSERT INTO filtered_mails (mail, counter,
                                url)
-                               VALUES (%s, 1, %s)
+                               VALUES (%s, %s, %s)
                                ON DUPLICATE KEY
                                UPDATE counter=counter+1
-                               """, [mail, url])
+                               """, [mail, Counter(mails)[mail], url,
+                                    Counter(mails)[mail]])
 

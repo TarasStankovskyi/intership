@@ -1,3 +1,4 @@
+import unittest
 import ConfigParser
 
 
@@ -20,7 +21,7 @@ class Config(object):
 
 
 
-
 if __name__ == "__main__":
-    example = Config("/home/user1/intership/cidr_ips.conf")
-    print example.config_options
+    a = Config('server.conf')
+    print a.config_options
+

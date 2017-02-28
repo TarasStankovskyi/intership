@@ -11,12 +11,16 @@ class Server(object):
         self.port = port
         self.que = que
         self.storage = db_storage
-        self.active_plugins = []
         self.__parse_config()
         self.plugins = []
-        for plugin in self.active_plugins:
-            module = __import__(config_options['modules'][plugin])
-            self.plugins.append(getattr(module, plugin))
+        for plugin in self.config_options['active_plugins']:
+            module = __import__(plugin)
+            self.plugins.append(getattr(module,
+                               self.config_options['active_plugins']\
+                               [plugin])(self.config_options['plugins_path']\
+                               ['path'], self.config_options['storage_type']\
+                               ['type'], self.config_options['crawler_path']\
+                               ['path']))
 
     def connect(self):
         while True:
@@ -31,11 +35,7 @@ class Server(object):
 
     def __parse_config(self):
         conf_obj = config.Config('/home/user1/intership/server.conf')
-        config_options = conf_obj.config_options
-        self.active_plugins = [plugin for plugin in\
-                         config_options['plugins'] if\
-                         config_options['plugins'][plugin] in\
-                         ('True', 'False')]
+        self.config_options = conf_obj.config_options
 
     def _execute(self, data):
         crawler = Crawler()
@@ -43,7 +43,7 @@ class Server(object):
             data = crawler.run(url)
             self.storage.insert_url(url)
             for plugin in self.plugins:
-                plugin().run(data)
+                plugin.run(data)
 
 
     def _run(self, client_socket, address):
