@@ -1,13 +1,12 @@
 import config
+import storage
 from base_plugin import BasePlugin
 from netaddr import IPAddress, IPRange
-from storage import Storage, DatabaseConnection
+
 
 class CidrIp(BasePlugin):
 
-    def get_config_options(self):
-        conf = config.Config(self.filename + "cidr_ips.conf")
-        self.config_options = conf.config_options
+    CONF_FILE = "cidr_ips.conf"
 
     def _insert_in_db(self, data, url):
         alloved_ips = []
@@ -27,7 +26,7 @@ class CidrIp(BasePlugin):
             self._insert_in_db(ips, url)
 
 if __name__ == '__main__':
-    x = CidrIp('/home/user1/intership/plugins/', 'mysql', "/home/user1/intership/crawler.conf")
+    x = CidrIp('/home/user1/intership/plugins/')
     x.get_config_options()
     print x.config_options
     x.run({'http://www.bbc.com/news\r\n': [['http://purl.org/dc/terms/', 'www.youtube.com', '212.58.246.2'],

@@ -1,16 +1,9 @@
-import os
 import config
+import storage
 from base_plugin import BasePlugin
-from storage import Storage, DatabaseConnection
 
 
 class DomainsPlugin(BasePlugin):
-
-    def get_config_options(self):
-        pass
-
-    def _insert_in_db(data, url):
-        pass
 
     def _store(self):
         domains = []
@@ -20,12 +13,9 @@ class DomainsPlugin(BasePlugin):
         self._insert_in_db(domains, url)
 
 
-
 class DomainComPlugin(DomainsPlugin):
 
-    def get_config_options(self):
-        conf = config.Config(self.filename + 'domain_com_plugin.conf')
-        self.config_options = conf.config_options
+    CONF_FILE = 'domain_com_plugin.conf'
 
     def _insert_in_db(self, data, url):
         domains = [domain for domain in data if\
@@ -37,10 +27,7 @@ class DomainComPlugin(DomainsPlugin):
 
 class RestrictedDomains(DomainsPlugin):
 
-    def get_config_options(self):
-        conf = config.Config(self.filename + 'restricted_domains.conf')
-        self.config_options = conf.config_options
-
+    CONF_FILE = 'restricted_domains.conf'
 
     def _insert_in_db(self, data, url):
         domains = [domain for domain in data for blocked_domain\
@@ -51,6 +38,6 @@ class RestrictedDomains(DomainsPlugin):
 
 
 if __name__ == '__main__':
-    a = RestrictedDomains('/home/user1/intership/plugins/', 'mysql', "/home/user1/intership/crawler.conf")
+    a = DomainComPlugin('/home/user1/intership/plugins/')
     a.run({'http://www.bbc.com/news\r\n': [['http://purl.org/dc/terms/', 'www.youtube.com', '207.241.224.2'],
            ['http://purl.org/dc/terms/', 'www.youtube.com', '207.241.224.2']]})

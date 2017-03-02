@@ -1,5 +1,6 @@
 import socket
 import config
+import storage
 from threading import Thread
 from collections import defaultdict
 from crawler import Crawler
@@ -7,19 +8,17 @@ from crawler import Crawler
 
 class Server(object):
 
-    def __init__(self, db_storage, port=8001, que=5):
+    def __init__(self, port=8001, que=5):
         self.port = port
         self.que = que
-        self.storage = db_storage
         self.__parse_config()
+        self.storage = storage.get_storage(self.config_options)
         self.plugins = []
         for plugin in self.config_options['active_plugins']:
             module = __import__(plugin)
             self.plugins.append(getattr(module,
                                self.config_options['active_plugins']\
-                               [plugin])(self.config_options['plugins_path']\
-                               ['path'], self.config_options['storage_type']\
-                               ['type'], self.config_options['crawler_path']\
+                               [plugin])(self.config_options['paths']\
                                ['path']))
 
     def connect(self):
@@ -61,6 +60,7 @@ class Server(object):
         client_socket.close()
 
     def shutdown(self):
+        self.storage.close()
         self.sock.close()
 
 

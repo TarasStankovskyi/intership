@@ -1,31 +1,28 @@
 import config
-from storage import Storage, DatabaseConnection
+import storage
 from netaddr import IPAddress, IPRange
 
 
 
 class BasePlugin(object):
 
-    def __init__(self, filename, storage_type, config_file):
-        self.filename = filename
-        self.get_storage(storage_type, config_file)
+    CONF_FILE = ''
+
+    def __init__(self, plugins_config_path):
+        self.plugins_config_path = plugins_config_path
+        self.get_config_options()
+        if self.config_options:
+            self.storage = storage.get_storage(self.config_options)
 
     def _store(self):
         raise NotImplementedError('You need to implement this method')
 
-    def get_storage(self, storage_type, config_file=None):
-        if storage_type == 'mysql':
-            conf_obj = config.Config(config_file)
-            conf = conf_obj.config_options
-            connection = DatabaseConnection(conf)
-            self.storage = Storage(connection)
-
     def get_config_options(self):
-        raise NotImplementedError('You need to implement this method')
+        conf = config.Config(self.plugins_config_path + self.CONF_FILE)
+        self.config_options = conf.config_options
 
     def run(self, data):
         self.data = data
-        self.get_config_options()
         self._store()
 
 

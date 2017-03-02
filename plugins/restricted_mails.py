@@ -1,13 +1,11 @@
 import config
+import storage
 from base_plugin import BasePlugin
-from storage import DatabaseConnection, Storage
 
 
 class RestrictedMails(BasePlugin):
 
-    def get_config_options(self):
-        conf = config.Config(self.filename + "restricted_mails.conf")
-        self.config_options = conf.config_options
+    CONF_FILE = "restricted_mails.conf"
 
     def _insert_in_db(self, data, url):
         filtered_mails = []
@@ -27,5 +25,5 @@ class RestrictedMails(BasePlugin):
 
 
 if __name__ == '__main__':
-    a = RestrictedMails()
+    a = RestrictedMails('/home/user1/intership/plugins/')
     a.run({'http://www.bbc.com/news\r\n': [['mailto:example@mail.ru', 'www.youtube.com', '207.241.224.2'],['mailto:mail@gmail.com/', 'www.stackoverflow.com', '207.241.224.2']]})

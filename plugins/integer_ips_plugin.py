@@ -1,13 +1,12 @@
 import config
+import storage
 from base_plugin import BasePlugin
 from netaddr import IPAddress
-from storage import DatabaseConnection, Storage
 
 
 class IntegerIpsPlugin(BasePlugin):
 
-    def get_config_options(self):
-        pass
+    CONF_FILE = "integer_ips.conf"
 
     def _insert_in_db(self, data, url):
         processed_data = []
