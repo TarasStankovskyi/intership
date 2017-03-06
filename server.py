@@ -12,15 +12,15 @@ class Server(object):
         self.port = port
         self.que = que
         self.__parse_config()
-        self.storage = storage.get_storage(self.config_options)
+        self.storage = storage.get_storage(self.config_options['storage']\
+                                          ['type'])
         self.plugins = []
         for plugin in self.config_options['active_plugins']:
             module = __import__(plugin)
             self.plugins.append(getattr(module,
                                self.config_options['active_plugins']\
                                [plugin])(self.config_options['paths']\
-                               ['path']))
-
+                               ['plugins_path']))
     def connect(self):
         while True:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

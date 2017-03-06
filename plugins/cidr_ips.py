@@ -1,5 +1,4 @@
 import config
-import storage
 from base_plugin import BasePlugin
 from netaddr import IPAddress, IPRange
 

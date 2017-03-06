@@ -9,16 +9,16 @@ class BasePlugin(object):
     CONF_FILE = ''
 
     def __init__(self, plugins_config_path):
-        self.plugins_config_path = plugins_config_path
-        self.get_config_options()
-        if self.config_options:
-            self.storage = storage.get_storage(self.config_options)
+        self.get_config_options(plugins_config_path)
+        if self.config_options['storage']:
+            storage_type = self.config_options['storage']['type']
+            self.storage = storage.get_storage(storage_type)
 
     def _store(self):
         raise NotImplementedError('You need to implement this method')
 
-    def get_config_options(self):
-        conf = config.Config(self.plugins_config_path + self.CONF_FILE)
+    def get_config_options(self, plugins_config_path):
+        conf = config.Config(plugins_config_path + self.CONF_FILE)
         self.config_options = conf.config_options
 
     def run(self, data):
