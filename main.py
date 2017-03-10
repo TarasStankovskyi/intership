@@ -1,4 +1,3 @@
-import config
 from server import Server
 
 

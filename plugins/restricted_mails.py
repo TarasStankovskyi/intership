@@ -1,5 +1,3 @@
-import config
-import storage
 from base_plugin import BasePlugin
 
 
@@ -13,7 +11,8 @@ class RestrictedMails(BasePlugin):
             if mail.split('@')[1] not in\
                     self.config_options['options']['restricted_mails']:
                         filtered_mails.append(mail)
-        self.storage.insert_filtered_mails(filtered_mails, url)
+        if filtered_mails:
+            self.storage.insert_filtered_mails(filtered_mails, url)
 
     def _store(self):
         mails = []

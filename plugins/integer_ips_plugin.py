@@ -1,4 +1,3 @@
-import config
 from base_plugin import BasePlugin
 from netaddr import IPAddress
 
@@ -10,8 +9,9 @@ class IntegerIpsPlugin(BasePlugin):
     def _insert_in_db(self, data, url):
         processed_data = []
         for domain, ip in data:
-            processed_data.append((domain, int(IPAddress(ip))))
-        self.storage.insert_integer_ips(processed_data, url)
+            processed_data.append([domain, int(IPAddress(ip))])
+        if processed_data:
+            self.storage.insert_integer_ips(processed_data, url)
 
     def _store(self):
         domain_ips = []

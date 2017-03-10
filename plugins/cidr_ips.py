@@ -26,8 +26,6 @@ class CidrIp(BasePlugin):
 
 if __name__ == '__main__':
     x = CidrIp('/home/user1/intership/plugins/')
-    x.get_config_options()
-    print x.config_options
     x.run({'http://www.bbc.com/news\r\n': [['http://purl.org/dc/terms/', 'www.youtube.com', '212.58.246.2'],
         ['http://purl.org/dc/terms/', 'www.stackoverflow.com', '212.58.246.29']]})
 

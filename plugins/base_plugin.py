@@ -1,6 +1,7 @@
+import os
 import config
 import storage
-from netaddr import IPAddress, IPRange
+
 
 
 
@@ -18,7 +19,7 @@ class BasePlugin(object):
         raise NotImplementedError('You need to implement this method')
 
     def get_config_options(self, plugins_config_path):
-        conf = config.Config(plugins_config_path + self.CONF_FILE)
+        conf = config.Config(os.path.join(plugins_config_path, self.CONF_FILE))
         self.config_options = conf.config_options
 
     def run(self, data):
@@ -27,4 +28,4 @@ class BasePlugin(object):
 
 
 if __name__ == '__main__':
-   pass
+    pass

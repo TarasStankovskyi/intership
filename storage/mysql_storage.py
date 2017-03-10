@@ -4,118 +4,117 @@ import config
 from collections import Counter
 
 
-class DatabaseConnection(object):
-    def __init__(self, config):
-        self.__config = config
-        self._db = MySQLdb.connect(self.__config['mysql']['host'],
-                                   self.__config['mysql']['user'],
-                                   self.__config['mysql']['passwd'],
-                                   self.__config['mysql']['db'],
-                                   int(self.__config['mysql']['port']))
+class DBStorage(object):
+
+    CONF_FILE = 'db.conf'
+
+    def __init__(self):
+        self.conf_obj = config.Config(os.environ['CONFROOT'] + self.CONF_FILE)
+        self._config = self.conf_obj.config_options
+        self.connect()
+
     def close(self):
-        self._db.close()
+        self._connection.close()
 
     def __enter__(self):
-        self.__cursor = self._db.cursor()
-        return self.__cursor
+        self._cursor = self._connection.cursor()
+        return self._cursor
 
     def __exit__(self, ext_type, exc_value, traceback):
         if isinstance(exc_value, Exception):
-            self._db.rollback()
+            self._connection.rollback()
         else:
-            self._db.commit()
+            self._connection.commit()
 
 
-class Storage(object):
+    def _data_ordering(self, data, url):
+        combined_data = [(param, url) for param in data]
+        result = []
+        for params, counter in Counter(combined_data).items():
+            lst = list(params)
+            lst.append(counter)
+            result.append(lst)
+        insert_count = len(result)
+        result = [param for params in result for param in params]
+        return insert_count, result
 
-    def __init__(self, connection):
-        self.__connection = connection
 
-    def close(self):
-        self.__connection.close()
-
-
-    def insert_url(self, url):
-        with self.__connection as cursor:
-            cursor.execute(
-                           """INSERT INTO urls (url, counter)
-                           VALUES (%s, 1)
-                           ON DUPLICATE KEY
-                           UPDATE counter=counter+1""", [url])
+    def insert_url(self, urls):
+        data = []
+        for param in Counter(urls).items():
+            data.extend(param)
+        query = """INSERT INTO urls (url, counter)
+                VALUES""" + ','.join(["(%s, %s)"]*len(urls)) + \
+                """ON DUPLICATE KEY
+                UPDATE counter=counter+VALUES(counter)"""
+        with self._connection as cursor:
+            cursor.execute(query, data)
 
     def insert_domains(self, domains, url):
-        with self.__connection as cursor:
-            for domain, counter in Counter(domains).items():
-                cursor.execute(
-                               """INSERT INTO domains (domain,
-                               counter, url)
-                               VALUES (%s, %s, %s)
-                               ON DUPLICATE KEY
-                               UPDATE counter=counter+%s
-                               """, [domain, counter, url,
-                                     counter])
-
+        insert_count, data = self._data_ordering(domains, url)
+        query = """INSERT INTO domains (domain, url, counter)
+                VALUES""" + ','.join(["(%s, %s, %s)"]*insert_count) + \
+                """ ON DUPLICATE KEY
+                UPDATE counter=counter+VALUES(counter)"""
+        with self._connection as cursor:
+            cursor.execute(query, data)
 
     def insert_restricted_domains(self, domains, url):
-        with self.__connection as cursor:
-            for domain, counter in Counter(domains).items():
-                cursor.execute(
-                               """INSERT INTO blocked_domains (domain,
-                               counter, url)
-                               VALUES (%s, %s, %s)
-                               ON DUPLICATE KEY
-                               UPDATE counter=counter+%s
-                               """, [domain, counter, url,
-                                    counter])
+        insert_count, data = self._data_ordering(domains, url)
+        query = """INSERT INTO blocked_domains (domain, url, counter)
+                VALUES""" + ','.join(["(%s, %s, %s)"]*insert_count) + \
+                """ ON DUPLICATE KEY
+                UPDATE counter=counter+VALUES(counter)"""
+        with self._connection as cursor:
+            cursor.execute(query, data)
 
     def insert_integer_ips(self, data, url):
-        with self.__connection as cursor:
-            for data, counter in Counter(data).items():
-                cursor.execute(
-                               """INSERT INTO integer_ips (ip, domain,
-                               counter, url)
-                               VALUES (%s, %s, %s, %s)
-                               ON DUPLICATE KEY
-                               UPDATE counter=counter+%s
-                               """, [data[1], data[0], counter, url, counter])
+        combined_data = []
+        result = []
+        for x in data:
+            x.append(url)
+            combined_data.append(x)
+        combined_data = [tuple(data) for data in combined_data]
+
+        for params, counter in Counter(combined_data).items():
+            lst = list(params)
+            lst.append(counter)
+            result.append(lst)
+        insert_count = len(result)
+        result = [param for params in result for param in params]
+        query = """INSERT INTO integer_ips (domain, ip, url, counter)
+                VALUES""" + ','.join(["(%s, %s, %s, %s)"]*insert_count) + \
+                """ ON DUPLICATE KEY
+                UPDATE counter=counter+VALUES(counter)"""
+        with self._connection as cursor:
+            cursor.execute(query, result)
 
     def insert_cidr_ips(self, ips, url):
-        with self.__connection as cursor:
-            for ip, counter in Counter(ips).items():
-                cursor.execute(
-                               """INSERT INTO cidr_ips (ip, counter, url)
-                               VALUES (%s, %s, %s)
-                               ON DUPLICATE KEY
-                               UPDATE counter=counter+%s
-                               """, [ip, counter, url,
-                                    counter])
-
+        insert_count, data = self._data_ordering(ips, url)
+        query = """INSERT INTO cidr_ips (ip, url, counter)
+                VALUES""" + ','.join(["(%s, %s, %s)"]*insert_count) + \
+                """ ON DUPLICATE KEY
+                UPDATE counter=counter+VALUES(counter)"""
+        with self._connection as cursor:
+            cursor.execute(query, data)
 
     def insert_filtered_mails(self, mails, url):
-        with self.__connection as cursor:
-            for mail, counter in Counter(mails).items():
-                cursor.execute(
-                               """INSERT INTO filtered_mails (mail, counter,
-                               url)
-                               VALUES (%s, %s, %s)
-                               ON DUPLICATE KEY
-                               UPDATE counter=counter+%s
-                               """, [mail, counter, url,
-                                    counter])
+        insert_count, data = self._data_ordering(mails, url)
+        query = """INSERT INTO filtered_mails (mail, url, counter)
+                VALUES""" + ','.join(["(%s, %s, %s)"]*insert_count) + \
+                """ ON DUPLICATE KEY
+                UPDATE counter=counter+VALUES(counter)"""
+        with self._connection as cursor:
+            cursor.execute(query, data)
 
 
-class MySQLStorage(Storage):
+class MySQLStorage(DBStorage):
 
-    def __init__(self):
-        self.CONF_FILE = 'db.conf' 
-        self.conf_obj = config.Config(os.environ['CONFROOT'] + self.CONF_FILE)
-        self.conf = self.conf_obj.config_options
-        self.conn = DatabaseConnection(self.conf)
-        super(MySQLStorage, self).__init__(self.conn)
-        self.storage = Storage(self.conn)
-
+    def connect(self):
+        self._connection = MySQLdb.connect(self._config['mysql']['host'],
+                                           self._config['mysql']['user'],
+                                           self._config['mysql']['passwd'],
+                                           self._config['mysql']['db'],
+                                           int(self._config['mysql']['port']))
 
 
-if __name__ == '__main__':
-    s = MySQLStorage()
-    print dir(s)
