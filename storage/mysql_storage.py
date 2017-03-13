@@ -27,17 +27,25 @@ class DBStorage(object):
             self._connection.commit()
 
 
-    def _data_ordering(self, data, url):
-        combined_data = [(param, url) for param in data]
+    def _data_preparing(self, data, url):
+        combined_data = []
+        for x in data:
+            if isinstance(x, str):
+                combined_data.append((x, url))
+            elif isinstance(x, list):
+                x.append(url)
+                combined_data.append(tuple(x))
+        return combined_data
+
+    def _data_ordering(self, data):
         result = []
-        for params, counter in Counter(combined_data).items():
+        for params, counter in Counter(data).items():
             lst = list(params)
             lst.append(counter)
             result.append(lst)
         insert_count = len(result)
         result = [param for params in result for param in params]
         return insert_count, result
-
 
     def insert_url(self, urls):
         data = []
@@ -51,37 +59,28 @@ class DBStorage(object):
             cursor.execute(query, data)
 
     def insert_domains(self, domains, url):
-        insert_count, data = self._data_ordering(domains, url)
+        data = self._data_preparing(domains, url)
+        insert_count, result = self._data_ordering(data)
         query = """INSERT INTO domains (domain, url, counter)
                 VALUES""" + ','.join(["(%s, %s, %s)"]*insert_count) + \
                 """ ON DUPLICATE KEY
                 UPDATE counter=counter+VALUES(counter)"""
         with self._connection as cursor:
-            cursor.execute(query, data)
+            cursor.execute(query, result)
 
     def insert_restricted_domains(self, domains, url):
-        insert_count, data = self._data_ordering(domains, url)
+        data = self._data_preparing(domains, url)
+        insert_count, result = self._data_ordering(data)
         query = """INSERT INTO blocked_domains (domain, url, counter)
                 VALUES""" + ','.join(["(%s, %s, %s)"]*insert_count) + \
                 """ ON DUPLICATE KEY
                 UPDATE counter=counter+VALUES(counter)"""
         with self._connection as cursor:
-            cursor.execute(query, data)
+            cursor.execute(query, result)
 
     def insert_integer_ips(self, data, url):
-        combined_data = []
-        result = []
-        for x in data:
-            x.append(url)
-            combined_data.append(x)
-        combined_data = [tuple(data) for data in combined_data]
-
-        for params, counter in Counter(combined_data).items():
-            lst = list(params)
-            lst.append(counter)
-            result.append(lst)
-        insert_count = len(result)
-        result = [param for params in result for param in params]
+        data = self._data_preparing(data, url)
+        insert_count, result = self._data_ordering(data)
         query = """INSERT INTO integer_ips (domain, ip, url, counter)
                 VALUES""" + ','.join(["(%s, %s, %s, %s)"]*insert_count) + \
                 """ ON DUPLICATE KEY
@@ -90,22 +89,24 @@ class DBStorage(object):
             cursor.execute(query, result)
 
     def insert_cidr_ips(self, ips, url):
-        insert_count, data = self._data_ordering(ips, url)
+        data = self._data_preparing(ips, url)
+        insert_count, result = self._data_ordering(data) 
         query = """INSERT INTO cidr_ips (ip, url, counter)
                 VALUES""" + ','.join(["(%s, %s, %s)"]*insert_count) + \
                 """ ON DUPLICATE KEY
                 UPDATE counter=counter+VALUES(counter)"""
         with self._connection as cursor:
-            cursor.execute(query, data)
+            cursor.execute(query, result)
 
     def insert_filtered_mails(self, mails, url):
-        insert_count, data = self._data_ordering(mails, url)
+        data = self._data_preparing(mails, url)
+        insert_count, result = self._data_ordering(data)
         query = """INSERT INTO filtered_mails (mail, url, counter)
                 VALUES""" + ','.join(["(%s, %s, %s)"]*insert_count) + \
                 """ ON DUPLICATE KEY
                 UPDATE counter=counter+VALUES(counter)"""
         with self._connection as cursor:
-            cursor.execute(query, data)
+            cursor.execute(query, result)
 
 
 class MySQLStorage(DBStorage):
