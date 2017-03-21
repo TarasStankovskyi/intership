@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crawler</title>
+    <link rel='stylesheet' type="text/css" href='main.css'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src='main.js'></script>
+
+</head>
+<body>
+    <div class="page">
+
+        <header>
+            <h1>Crawler</h1>
+        </header>
+
+        <div class='container'>
+            <ul id='tabs'>
+                <li><a class='tablink' onclick='showTabs(this)'  id='tab1' style='color:#cc3333'>Urls</a></li>
+                <li><a class='tablink' onclick='showTabs(this)' id='tab2'>Source</a></li>
+            </ul>
+
+            <div class='tabContent tab1' style='display:block;'>
+                <div class='container'>
+                        <form>
+                            <input type='text' size='25' name='search' placeholder='Search...'>
+                        </form>
+
+                    <table class='container'>
+                        <tr>
+                            <th>Source</th>
+                            <th>Url</th>
+                            <th>Counter</th>
+                        </tr>
+                        <tr>
+                            <td>Example.com</td>
+                            <td>url</td>
+                            <td>100</td>
+                        </tr>
+                        <tr>
+                            <td>Example.com</td>
+                            <td>url</td>
+                            <td>100</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class='tabContent tab2'>
+                <div class='container'>
+                    <form>
+                        <input type='text' name='input' style='background-image: none'>
+                        <button class='addButton'>add</button>
+                    </form>
+
+                    <div class='container'>
+                        <table class='container'>
+                            <tr>
+                                <th>Status</th>
+                                <th>Url</th>
+                                <th>Counter</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <td><button class='statusBtn' title='enable'></button></td>
+                                <td><span>example</span></td>
+                                <td><span>counter</span></td>
+                                <td><button title='edit'><img src='/home/user1/web_crawler/Actions-document-edit-icon.png'/></button></td>
+                                <td><button title='delete'><img src='/home/user1/web_crawler/Actions-edit-delete-icon.png'></button></td>
+                        </table>
+                    </div>
+
+
+            </div>
+
+        </div>
+
+            <footer>
+                <p>Copyright &copy; TarasStankovskyi</p>
+            </footer>
+    </div>
+</body>
+</html>
+
