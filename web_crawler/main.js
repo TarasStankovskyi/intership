@@ -1,29 +1,52 @@
-/*$(document).ready(function() {
-    $('li').click(function() {
-        $('.tab').hide().eq($(this).index()).show();
-        $('ul.tabs li').removeClass('current');
-        $(this).addClass('current');
-    });
-});*/
-
 
 function showTabs(elem) {
-    var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName('tabContent')
-    for  ( i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = 'none';
+    var tabcontent = document.getElementsByClassName('tab_content')
+    for  ( var i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove('current');
     }
 
-    document.getElementsByClassName(elem.id)[0].style.display = 'block';
+    var tab = elem.getAttribute('data-tab');
+    document.getElementById(tab).classList.add('current');
 
-    tablinks = document.getElementsByClassName('tablink');
+    var tablinks = document.getElementsByClassName('tablink');
     for (i=0; i < tablinks.length; i++) {
-        tablinks[i].style.color = 'black';
+        tablinks[i].classList.remove('selected');
     }
-    elem.style.color = '#cc3333';
+    elem.classList.add('selected');
 
-}
+};
 
+
+function get_modal(id) {
+    var url = document.getElementById(id).innerText;
+    var modal =  document.getElementById('my_modal').style.display = 'block';
+    document.getElementById('my_input').value = url;
+    var id_field = document.getElementById('hidden_id');
+    id_field.value = id.slice(4)
+};
+
+function editClose() {
+    document.getElementById('my_modal').style.display = 'none';
+};
+
+function editUrl() {
+    var url = document.getElementById('my_input').value;
+    var url_id = document.getElementById('hidden_id').value;
+    document.getElementById('url_' + url_id).innerHTML=url;
+    editClose();
+
+};
+
+function status_button(elem) {
+    var class_list = elem.classList;
+    if (class_list.contains('status_btn_on')) {
+        class_list.remove('status_btn_on');
+        class_list.add('status_btn_off');
+    } else {
+        class_list.remove('status_btn_off');
+        class_list.add('status_btn_on');
+    }
+};
 
 
 

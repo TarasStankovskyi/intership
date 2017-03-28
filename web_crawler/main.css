@@ -1,7 +1,7 @@
 *{margin: 0; padding: 0;}
 
 body {
-    font-size: 80%;
+    font-size: 90%;
     font-family: "Courier New", Courier, monospace;
     letter-spacing: 0.15em;
     background-color: #efefef;
@@ -16,7 +16,7 @@ body {
 }
 
 header {
-    width: 150px;
+    width: 90px;
     margin: 10px auto 25px auto;
 }
 
@@ -46,7 +46,8 @@ ul#tabs li {
 
 ul#tabs a{
     text-decoration: none;
-    color: black;}
+    color: black;
+}
 
 ul#tabs li a.selected {
     color: #cc3333;
@@ -60,7 +61,7 @@ ul#tabs li a.selected {
     font-weight: normal;
 }
 
-input {
+.tab_content input {
     box-sizing: border-box;
     border: 2px solid black;
     border-radius: 6px;
@@ -70,7 +71,7 @@ input {
     padding: 6px 60px ;
 }
 
-div.tabContent {
+.tab_content {
     display: none;
     text-align: center;
     width: 600px;
@@ -78,27 +79,38 @@ div.tabContent {
     font-weight: normal;
 }
 
-
 button {
     color: white;
     border-radius: 6px;
+    height: 25px;
+    width: 25px;
 }
 
-.addButton {
+.current {
+    display: block;
+}
+
+.add_button {
     background: rgb(28, 184, 65);
-}
-.deleteButton {
-    background: rgb(202, 60, 60);
+    width: 35px;
 }
 
-.editBtn {
-    background-image: url('/home/user1/web_crawler');
-}
-
-.statusBtn {
+.status_btn_on {
     background: green;
     height: 20px;
     width: 20px;
+    margin-right: 40px;
+}
+
+.status_btn_off {
+    background: red;
+    height: 20px;
+    width: 20px;
+    margin-right: 40px;
+}
+
+h1 {
+    font-size: 18px;
 }
 
 img {
@@ -106,5 +118,97 @@ img {
 }
 
 td {
-    font-size: 16px;
+    font-size: 12px;
+    padding: 5px;
+    border: 1px solid black;
 }
+
+.modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0,0.4);
+}
+
+.modal .modal_content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: #fefefe;
+    margin: -200px 0 0 -250px;
+    padding: 0;
+    border: 4px double #000;
+    width: 500px;
+    height: 200px;
+}
+
+.modal .close {
+    color: black;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.modal .close:hover, .close:focus {
+    color: red;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal .modal_header {
+    margin-top: 10px;
+    padding: 2px 16px;
+    background-color: #ffffff;
+    color: black;
+    border-bottom: 2px solid #000;
+}
+
+.modal .modal_body {
+    margin-top: 40px;
+    padding: 2px 16px;
+}
+
+.modal .cancel_button {
+    color: black;
+    width: 65px;
+}
+
+.modal .cancel_button:hover {
+    background-color: #ebebfa;
+}
+
+
+.modal .modal_footer {
+    margin-top: 40px; 
+    background-color: #ffffff;
+    color: black;
+    border-top: 2px solid #000;
+    padding: 10px 0;
+}
+
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    word-wrap: break-word;
+    text-align: center;
+}
+
+table tr:nth-child(even) {
+    background-color: #ccc;
+}
+
+table tr {
+    idth: 10px;
+    letter-spacing: 0;
+}
+
+table td{
+    border-left: 0;
+    border-right: 0;
+    white-space: initial;
+}
+
