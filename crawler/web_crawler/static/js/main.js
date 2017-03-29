@@ -20,7 +20,7 @@ function showTabs(elem) {
 function get_modal(id) {
     var url = document.getElementById(id).innerText;
     var modal =  document.getElementById("my_modal").style.display = "block";
-    document.getElementById("my_input").value = url;
+    document.getElementById("source").value = url;
     var id_field = document.getElementById("source_id");
     id_field.value = id.slice(4)
 };
@@ -30,7 +30,7 @@ function editClose() {
 };
 
 function editUrl() {
-    var url = document.getElementById("my_input").value;
+    var url = document.getElementById("source").value;
     var url_id = document.getElementById("source_id").value;
     document.getElementById("url_" + url_id).innerHTML=url;
     editClose();

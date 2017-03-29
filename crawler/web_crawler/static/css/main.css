@@ -3,7 +3,7 @@
 body {
     font-size: 90%;
     font-family: "Courier New", Courier, monospace;
-    letter-spacing: 0.15em;
+    letter-spacing: 2px;
     background-color: #efefef;
 }
 
@@ -49,16 +49,7 @@ ul#tabs a {
     color: black;
     display: inline-block;
     position: relative;
-}
-
-ul#tabs a:after {
-    content: "";
-    padding: 50px;
-    position: absolute;
-    left: -15px;
-    right: -15px;
-    top: -15px;
-    bot: -15px;
+    padding: 5px 15px;
 }
 
 ul#tabs li a.selected {
@@ -73,12 +64,19 @@ ul#tabs li a.selected {
     font-weight: normal;
 }
 
-.tab_content input {
+.main_input {
     border: 2px solid black;
     border-radius: 6px;
     background: url(../images/search-icon.png)  5px 5px no-repeat;
     padding: 6px 60px ;
 }
+
+.custom_input {
+    border: 2px solid black;
+    border-radius: 6px;
+    padding: 6px 60px ;
+}
+
 
 .tab_content {
     display: none;
@@ -88,7 +86,7 @@ ul#tabs li a.selected {
     font-weight: normal;
 }
 
-button {
+.custom_button {
     color: white;
     border-radius: 6px;
     height: 25px;
@@ -118,15 +116,11 @@ button {
     margin-right: 40px;
 }
 
-h1 {
-    font-size: 18px;
-}
-
 .action_btn img {
     height: 20px;
 }
 
-td {
+table td {
     font-size: 12px;
     padding: 5px;
     white-space: initial;
@@ -193,7 +187,7 @@ td {
 
 .modal .modal_footer {
     margin-top: 40px; 
-    background-color: #ffffff;
+    background: #ffffff;
     color: black;
     border-top: 2px solid #000;
     padding: 10px 0;
