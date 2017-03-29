@@ -44,9 +44,21 @@ ul#tabs li {
     cursor: pointer;
 }
 
-ul#tabs a{
+ul#tabs a {
     text-decoration: none;
     color: black;
+    display: inline-block;
+    position: relative;
+}
+
+ul#tabs a:after {
+    content: "";
+    padding: 50px;
+    position: absolute;
+    left: -15px;
+    right: -15px;
+    top: -15px;
+    bot: -15px;
 }
 
 ul#tabs li a.selected {
@@ -62,12 +74,9 @@ ul#tabs li a.selected {
 }
 
 .tab_content input {
-    box-sizing: border-box;
     border: 2px solid black;
     border-radius: 6px;
-    background-image: url(http://static.tumblr.com/ftv85bp/MIXmud4tx/search-icon.png);
-    background-position: 5px 5px;
-    background-repeat: no-repeat;
+    background: url(../images/search-icon.png)  5px 5px no-repeat;
     padding: 6px 60px ;
 }
 
@@ -91,7 +100,7 @@ button {
 }
 
 .add_button {
-    background: rgb(28, 184, 65);
+    background: #19e649;
     width: 35px;
 }
 
@@ -113,14 +122,14 @@ h1 {
     font-size: 18px;
 }
 
-img {
+.action_btn img {
     height: 20px;
 }
 
 td {
     font-size: 12px;
     padding: 5px;
-    border: 1px solid black;
+    white-space: initial;
 }
 
 .modal {
@@ -138,7 +147,7 @@ td {
     position: absolute;
     top: 50%;
     left: 50%;
-    background-color: #fefefe;
+    background: #fefefe;
     margin: -200px 0 0 -250px;
     padding: 0;
     border: 4px double #000;
@@ -202,13 +211,8 @@ table tr:nth-child(even) {
 }
 
 table tr {
-    idth: 10px;
     letter-spacing: 0;
 }
 
-table td{
-    border-left: 0;
-    border-right: 0;
-    white-space: initial;
-}
+
 
