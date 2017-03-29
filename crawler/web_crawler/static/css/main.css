@@ -68,13 +68,17 @@ ul#tabs li a.selected {
     border: 2px solid black;
     border-radius: 6px;
     background: url(../images/search-icon.png)  5px 5px no-repeat;
-    padding: 6px 60px ;
+    padding:0 8px 0 30px;
+    line-height: 29px;
+    width: 70%;
 }
 
 .custom_input {
     border: 2px solid black;
     border-radius: 6px;
-    padding: 6px 40px ;
+    padding: 0 8px;
+    width: 70%;
+    line-height: 29px;
 }
 
 
