@@ -50,6 +50,7 @@ ul#tabs a {
     display: inline-block;
     position: relative;
     padding: 5px 15px;
+    outline: none;
 }
 
 ul#tabs li a.selected {
