@@ -1,8 +1,9 @@
+{% load static from staticfiles %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Crawler</title>
-    <link rel="stylesheet" type="text/css" href="static/css/main.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     <script src="static/js/main.js"></script>
     <meta charset="utf-8"/>
 
@@ -81,8 +82,8 @@
                                 <td><button class="status_btn_on custom_button" title="enable" onclick="status_button(this)"></button></td>
                                 <td id="url_1">https://www.bbc.com</td>
                                 <td>300</td>
-                                <td class='action_btn'><nav><button class='custom_button' title="edit" onclick="get_modal('url_1')"><img alt="edit" src="static/images/Actions-document-edit-icon.png"/></button>
-                                        <button class='custom_button' title="delete"><img alt="delete" src="static/images/Actions-edit-delete-icon.png"></button></nav></td>
+                                <td class='action_btn'><nav><button class='custom_button' title="edit" onclick="get_modal('url_1')"><img alt="edit" src="{% static 'images/Actions-document-edit-icon.png' %}"/></button>
+                                        <button class='custom_button' title="delete"><img alt="delete" src="{% static 'images/Actions-edit-delete-icon.png' %}"></button></nav></td>
                             </tr>
                         </table>
                     </div>
